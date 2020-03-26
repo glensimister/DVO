@@ -38,7 +38,12 @@ class ToolBarBottom extends HTMLElement {
                 score = totLikes + totDislikes;
                 score = (totLikes / score) * 100;
                 score = Math.round(score);
-                return score;
+                if (isNaN(score)) {
+                    return 0;
+                } else {
+                    return score;
+                }
+
             }
 
             if (hasLiked)

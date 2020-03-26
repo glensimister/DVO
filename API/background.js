@@ -98,7 +98,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 if (numLikes === null || numLikes === undefined) {
                     numLikes = 1;
                 } else {
-                    numLikes = Object.keys(numLikes).length;
+                    numLikes = Object.keys(numLikes).length - 1;
                     numLikes++;
                     hasLiked = await hasLikedBefore(request.pageUrl);
                 }
@@ -106,34 +106,30 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 if (numDislikes === null || numDislikes === undefined) {
                     numDislikes = 0;
                 } else {
-                    numDislikes = Object.keys(numDislikes).length;
+                    numDislikes = Object.keys(numDislikes).length - 1;
                     numDislikes--;
                     hasDisliked = await hasDislikedBefore(request.pageUrl);
                 }
 
+                if (hasLiked) {
+                    removeLikePage(request.pageUrl);
+                }
+
+                if (hasDisliked) {
+                    removeDislikePage(request.pageUrl);
+                }
+
                 if (!hasLiked) {
                     user.get('pageReviews').get(request.pageUrl).get('likes').get(user.is.pub).put(request.date);
-
-                    if (hasDisliked) {
-                        removeDislikePage(request.pageUrl);
-                    }
-
-                    port.postMessage({
-                        type: "fromLikePage",
-                        likes: numLikes,
-                        dislikes: numDislikes,
-                        hasLiked: hasLiked
-                    });
-
-                } else {
-                    removeLikePage(request.pageUrl);
-                    port.postMessage({
-                        type: "fromLikePage",
-                        likes: numLikes,
-                        dislikes: numDislikes,
-                        hasLiked: hasLiked
-                    });
                 }
+
+                port.postMessage({
+                    type: "fromLikePage",
+                    likes: numLikes,
+                    dislikes: numDislikes,
+                    hasLiked: hasLiked
+                });
+
             })();
             return true;
         }
@@ -148,7 +144,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 if (numLikes === null || numLikes === undefined) {
                     numLikes = 0;
                 } else {
-                    numLikes = Object.keys(numLikes).length;
+                    numLikes = Object.keys(numLikes).length - 1;
                     numLikes--;
                     hasLiked = await hasLikedBefore(request.pageUrl);
                 }
@@ -156,34 +152,30 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 if (numDislikes === null || numDislikes === undefined) {
                     numDislikes = 1;
                 } else {
-                    numDislikes = Object.keys(numDislikes).length;
+                    numDislikes = Object.keys(numDislikes).length - 1;
                     numDislikes++;
                     hasDisliked = await hasDislikedBefore(request.pageUrl);
                 }
 
+                if (hasLiked) {
+                    removeLikePage(request.pageUrl);
+                }
+
+                if (hasDisliked) {
+                    removeDislikePage(request.pageUrl);
+                }
+
                 if (!hasDisliked) {
                     user.get('pageReviews').get(request.pageUrl).get('dislikes').get(user.is.pub).put(request.date);
-
-                    if (hasLiked) {
-                        removeLikePage(request.pageUrl);
-                    }
-
-                    port.postMessage({
-                        type: "fromDislikePage",
-                        likes: numLikes,
-                        dislikes: numDislikes,
-                        hasDisliked: hasDisliked
-                    });
-
-                } else {
-                    removeDislikePage(request.pageUrl);
-                    port.postMessage({
-                        type: "fromDislikePage",
-                        likes: numLikes,
-                        dislikes: numDislikes,
-                        hasDisliked: hasDisliked
-                    });
                 }
+
+                port.postMessage({
+                    type: "fromDislikePage",
+                    likes: numLikes,
+                    dislikes: numDislikes,
+                    hasDisliked: hasDisliked
+                });
+
             })();
             return true;
         }
@@ -201,14 +193,14 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 if (numLikes === null || numLikes === undefined) {
                     numLikes = 0;
                 } else {
-                    numLikes = Object.keys(numLikes).length;
+                    numLikes = Object.keys(numLikes).length - 1;
                     hasLiked = await hasLikedBefore(request.pageUrl);
                 }
 
                 if (numDislikes === null || numDislikes === undefined) {
                     numDislikes = 0;
                 } else {
-                    numDislikes = Object.keys(numDislikes).length;
+                    numDislikes = Object.keys(numDislikes).length - 1;
                     hasDisliked = await hasDislikedBefore(request.pageUrl);
                 }
 
@@ -232,23 +224,24 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     /********** Helper functions **********/
 
     function removeLikePage(pageUrl) {
-        user.get('pageReviews').get(pageUrl).get('likes').map().once(function (data, key) {
+        user.get('pageReviews').get(pageUrl).get('likes').get(user.is.pub).put(null);
+        /*user.get('pageReviews').get(pageUrl).get('likes').map().once(function (data, key) {
             if (data.pubkey === user.is.pub) {
-                user.get('pageReviews').get(pageUrl).get('likes').get(key).put(null);
+                user.get('pageReviews').get(pageUrl).get('likes').get(user.is.pub).put(null);
                 console.log("like has been removed for: " + pageUrl);
             }
-        });
+        });*/
     }
 
     function removeDislikePage(pageUrl) {
-        user.get('pageReviews').get(pageUrl).get('dislikes').map().once(function (data, key) {
+        user.get('pageReviews').get(pageUrl).get('dislikes').get(user.is.pub).put(null);
+        /*user.get('pageReviews').get(pageUrl).get('dislikes').map().once(function (data, key) {
             if (data.pubkey === user.is.pub) {
-                user.get('pageReviews').get(pageUrl).get('dislikes').get(key).put(null);
+                user.get('pageReviews').get(pageUrl).get('dislikes').get(user.is.pub).put(null);
                 console.log("dislike has been removed for: " + pageUrl);
             }
-        });
+        });*/
     }
-
 
 
     async function getLikes(pageUrl) {
