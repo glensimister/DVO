@@ -1,9 +1,9 @@
 var gun = Gun();
 var user = gun.user();
-/*
+
 user.recall({
     sessionStorage: true
-});*/
+});
 
 /************* API for external apps and extensions (NOTE: Internal API is below) *************/
 
@@ -127,14 +127,13 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                 } else {
                     removeLikePage(request.pageUrl);
+                    port.postMessage({
+                        type: "fromLikePage",
+                        likes: numLikes,
+                        dislikes: numDislikes,
+                        hasLiked: hasLiked
+                    });
                 }
-
-                port.postMessage({
-                    type: "fromLikePage",
-                    likes: numLikes,
-                    dislikes: numDislikes,
-                    hasLiked: hasLiked
-                });
             })();
             return true;
         }
@@ -178,14 +177,13 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                 } else {
                     removeDislikePage(request.pageUrl);
+                    port.postMessage({
+                        type: "fromDislikePage",
+                        likes: numLikes,
+                        dislikes: numDislikes,
+                        hasDisliked: hasDisliked
+                    });
                 }
-
-                port.postMessage({
-                    type: "fromDislikePage",
-                    likes: numLikes,
-                    dislikes: numDislikes,
-                    hasDisliked: hasDisliked
-                });
             })();
             return true;
         }

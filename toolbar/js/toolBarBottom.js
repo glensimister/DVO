@@ -25,17 +25,20 @@ class ToolBarBottom extends HTMLElement {
             let hasLiked = false;
             let hasDisliked = false;
             let totalLikes = null;
+            let val;
 
             totalLikes = await getPageLikes();
             totLikes = totalLikes.likes;
             totDislikes = totalLikes.dislikes;
             hasLiked = totalLikes.hasLiked;
             hasDisliked = totalLikes.hasDisliked;
+            score = calculateScore();
 
-            if (hasLiked > 0) {
+            function calculateScore() {
                 score = totLikes + totDislikes;
                 score = (totLikes / score) * 100;
                 score = Math.round(score);
+                return score;
             }
 
             if (hasLiked)
@@ -71,7 +74,7 @@ class ToolBarBottom extends HTMLElement {
 <div id="likes">${totLikes}</div>
 <div id="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
 <div id="dislikes">${totDislikes}</div>
-<div>${score}%</div>
+<div><span id="score">${score}</span>%</div>
 </div>
 `;
 
@@ -80,6 +83,7 @@ class ToolBarBottom extends HTMLElement {
             let dislikes = shadowRoot.getElementById("dislikes");
             let dislike = shadowRoot.getElementById("dislike");
             let close = shadowRoot.getElementById("close");
+            let scoreDiv = shadowRoot.getElementById("score");
             let toolbar = shadowRoot.querySelector(".toolbar-bottom");
 
 
@@ -115,6 +119,8 @@ class ToolBarBottom extends HTMLElement {
 
             $(like).on('click', async function () {
 
+                $(like).find('i').toggleClass("red gray");
+
                 port.postMessage({
                     type: "likePage",
                     pageUrl: url,
@@ -127,19 +133,32 @@ class ToolBarBottom extends HTMLElement {
                     if (res.type === "fromLikePage") {
                         console.log(res);
                         if (!res.hasLiked) {
-                            $(dislikes).html(res.dislikes);
-                            $(like).find('i').toggleClass("red gray");
+                            // if it hasn't already been liked, add 1
+                            val = $(likes).html();
+                            val++;
+                            $(likes).html(val);
+                            // and substract 1 from dislikes if val is greater than 0
+                            val = $(dislikes).html();
+                            if (val > 0) {
+                                val--;
+                                $(dislikes).html(val);
+                            }
                         } else {
+                            // substract 1 from likes
+                            val = $(likes).html();
+                            if (val > 0) {
+                                val--;
+                            }
+                            $(likes).html(val);
                             console.log("page has already been liked");
-                            $(like).find('i').toggleClass("gray red");
-                            // do something
                         }
-                        $(likes).html(res.likes);
                     }
                 });
             });
 
             $(dislike).on('click', async function () {
+
+                $(dislike).find('i').toggleClass("blue gray");
 
                 port.postMessage({
                     type: "dislikePage",
@@ -153,13 +172,25 @@ class ToolBarBottom extends HTMLElement {
                     if (res.type === "fromDislikePage") {
                         console.log(res);
                         if (!res.hasDisliked) {
-                            $(likes).html(res.likes);
-                            $(dislike).find('i').toggleClass("blue gray");
+                            // if it hasn't already been liked, add 1
+                            val = $(dislikes).html();
+                            val++;
+                            $(dislikes).html(val);
+                            // and substract 1 from dislikes if val is greater than 0
+                            val = $(likes).html();
+                            if (val > 0) {
+                                val--;
+                                $(likes).html(val);
+                            }
                         } else {
+                            // substract 1 from likes
+                            val = $(dislikes).html();
+                            if (val > 0) {
+                                val--;
+                            }
+                            $(dislikes).html(val);
                             console.log("page has already been disliked");
-                            $(dislike).find('i').toggleClass("gray blue");
                         }
-                        $(dislikes).html(res.dislikes);
                     }
                 });
             });
