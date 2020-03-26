@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<title>DVO Widgets</title>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="module" src="components/donateEthButton/donate-eth-button.js"></script>
+    <script type="module" src="components/donateSocialCredits/donate-social-credits.js"></script>
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/main.js"></script>
+    <link rel="stylesheet" href="css/buttons.css">
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background: #1c2529;
+            color: #fff;
+            font-size: 14px;
+            min-width: 400px;
+        }
+        
+        h3 {
+            color: #e08e0b;
+        }
+        
+        #container {
+            padding: 20px;
+        }
+        
+        #btn-add-new,
+        #btn-your-widgets {
+            background: none;
+            border: 1px solid #eee;
+            margin: 0 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: #fff;
+        }
+        
+        section {
+            margin-top: 20px;
+        }
+        
+        #your-widgets {
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            box-sizing: border-box;
+            display: block;
+            width: 100%;
+            font-family: 'Open Sans', sans-serif;
+            height: 34px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <button id="btn-add-new">ADD NEW</button>
+        <button id="btn-your-widgets">YOUR WIDGETS</button>
+        <section id="add-new">
+            <div class="form-group">
+                <select>
+                    <option value="crowdfunding">Crowdfunding Button</option>
+                    <option value="donation">Donatation Button</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" value="Project title">
+            </div>
+            <div class="form-group">
+                <textarea class="form-control" rows="5" value="Project description"></textarea>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" value="Project start date">
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" value="Target">
+            </div>
+            <div class="form-group">
+                <button id="get-link" class="btn btn-red">GET LINK</button>
+            </div>
+        </section>
+        <section id="your-widgets">
+            <h3>Donate Ether</h3>
+            <p>http://donateEth@dvo.dvo/?pubKey=0x66454C561Cf137F53321945758b0E4645E9EEae8</p>
+            <p>
+                <donate-eth-button></donate-eth-button>
+            </p>
+            <!--
+            <h3>Donate Social Credits</h3>
+            <p>http://donateSocialCredits@dvo.dvo/?pubKey=0x66454C561Cf137F53321945758b0E4645E9EEae8&amp;postId=54518&amp;target=5000&amp;days=100</p>
+            <p>
+                <donate-social-credits></donate-social-credits>
+            </p>
+-->
+        </section>
+    </div>
+</body>
+
+</html>

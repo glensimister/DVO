@@ -1,0 +1,49 @@
+{
+    "name": "DVO API",
+    "version": "0.0.1",
+    "manifest_version": 2,
+    "description": "DVO API",
+    "permissions": ["storage","contextMenus"],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+    "externally_connectable": {
+        "matches": ["http://localhost:8000/", "<all_urls>"],
+        "ids": ["*"]
+    },
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "browser_action": {
+        "default_icon": { // optional
+            "16": "icons/icon16.png", // optional
+            "24": "icons/icon48.png", // optional
+            "32": "icons/icon128.png" // optional
+        },
+        "default_title": "DVO",
+        "default_popup": "login.html"
+    },
+    "background": {
+        "scripts": ["js/gun.js", "js/sea.js", "js/webrtc.js", "background.js"],
+        "persistent": true
+    },
+    "web_accessible_resources": [
+        "images/*",
+        "css/*",
+        "fonts/*",
+        "js/*"
+     ],
+    "content_scripts": [
+        {
+            "matches": [
+        "<all_urls>"
+      ],
+            "js": [
+        "js/jquery-3.3.1.js",
+        "js/gun.js",
+        "js/sea.js",
+        "js/webrtc.js"
+        ]
+    }
+  ]
+}

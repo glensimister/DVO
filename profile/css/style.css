@@ -1,0 +1,396 @@
+/* GLEN! YOU NEED TO REMOVE A LOT OF THESE STYLES BECAUSE THE ARE REDUNDENT */
+
+@font-face {
+    font-family: 'OpenSans-Bold';
+    src: URL('../fonts/OpenSans-Bold.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'OpenSans-Regular';
+    src: URL('../fonts/OpenSans-Regular.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'OpenSans-Italic';
+    src: URL('../fonts/OpenSans-Italic.ttf') format('truetype');
+}
+body {
+    font-family: 'OpenSans-Regular', sans-serif;
+    font-weight: 400;
+    color: #fff;
+    line-height: 1.5;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin: 0 0 15px 0;
+    font-weight: 400;
+    color: #fff;
+}
+h4 {
+    font-size: 16px;
+}
+h3,
+h4,
+b,
+strong {
+    font-weight: 700;
+    font-family: 'OpenSans-Bold', sans-serif;
+}
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+small {
+    font-size: 10px;
+}
+.pull-right {
+    float: right;
+}
+#container .inner {
+    padding: 20px;
+    background-color: #1c2529;
+    -webkit-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    -moz-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+}
+#main ul,
+#main ol {
+    margin: 20px 0;
+    background-color: #1c2529;
+    color: #fff;
+    border: 1px solid #1c2529;
+    border-radius: 4px;
+    padding: 15px 30px;
+    -webkit-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    -moz-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+}
+pre {
+    margin: 20px 0;
+    background: #eee;
+    border-radius: 4px;
+    padding: 0 20px;
+}
+#main .accordion {
+    /* -webkit-box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47); */
+    -moz-box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47);
+    /* box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47); */
+    cursor: pointer;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    transition: 0.4s;
+    font-size: 14px;
+    font-family: 'OpenSans-Regular', sans-serif;
+    font-weight: 400;
+    color: #ffffff;
+}
+#main .active,
+#main .accordion:hover {
+    background-color: #e2dfdf;
+}
+#main .panel {
+    display: none;
+    overflow: hidden;
+}
+#main button.accordion {
+    background: #1c2529;
+    border: 1px solid #1c2529;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+#main button.accordion:after {
+    content: '\002B';
+    color: #777;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+    font-size: 18px;
+}
+#main button.accordion.active:after {
+    content: "\2212";
+}
+#main {
+    padding: 30px;
+    min-height: 600px;
+    /* position: relative; */
+    background: #2c3a40;
+}
+.edit-icon {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+}
+.delete-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.post .fa-floppy-o {
+    color: #dd4b39;
+}
+.content {
+    margin-bottom: 90px;
+}
+.page-title {
+    text-transform: uppercase;
+    margin: 0;
+}
+a {
+    color: #008d4c;
+    text-decoration: none;
+}
+textarea.form-control {
+    height: auto;
+}
+top-nav {
+    display: grid;
+    text-align: center;
+    grid-template-columns: repeat(5, 1fr);
+}
+top-nav .active {
+    color: #dd4b39;
+    -webkit-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    -moz-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+}
+top-nav a:hover {
+    color: #dd4b39;
+}
+top-nav a {
+    cursor: pointer;
+    color: #848484;
+    background: #1c2529;
+    display: block;
+    line-height: 27px;
+    font-size: 12px;
+    padding: 10px 5px;
+    border: 1px solid #222d32;
+}
+.logo {
+    background: #1c2529;
+}
+.logo a {
+    text-align: center;
+    line-height: 27px;
+    color: #fff;
+    text-transform: uppercase;
+    display: block;
+    font-size: 16px;
+    padding: 10px;
+}
+.logo b {
+    color: #00acd6;
+}
+.logo span {
+    color: #fff;
+}
+#details {
+    text-align: left;
+}
+.grid > #details {
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    padding: 0;
+}
+#details i {
+    width: 20px;
+    color: #dd4b39;
+}
+.add-friend {
+    padding: 20px;
+    border-top: 2px solid #1c2529;
+    border-bottom: 2px solid #1c2529;
+    margin-top: 20px;
+}
+.sidebar-header {
+    background: #1c2529;
+    text-transform: uppercase;
+    font-size: 13px;
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+}
+#details {
+    font-size: 13px;
+}
+#details li {
+    line-height: 30px;
+    padding: 0 15px;
+    display: block;
+    text-decoration: none;
+}
+.left {
+    background: #222d32;
+    color: #848484;
+    border-right: 1px solid #1c2529;
+}
+.user-image-large {
+    width: 128px;
+    height: 128px;
+    display: block;
+    margin: auto;
+    border: 5px solid #848484;
+    border-radius: 50%;
+}
+
+/* this layout use the "mobile first" approach. As such, the styles below are for mobile, and the media queries are for desktop */
+
+.sidebar,
+.footer,
+top-menu,
+.grid-3-col > div,
+.grid-4-col > div {
+    -moz-box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47);
+}
+.box > div {
+    padding: 30px;
+    margin-bottom: 20px;
+    position: relative;
+    border: 1px solid #eee;
+    border-radius: 3px;
+}
+
+/**** user image *****/
+
+.user-image-small {
+    float: left;
+    width: 25px;
+    height: 25px;
+    border: 1px solid #848484;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+#tabs {
+    width: 100%;
+    text-align: center;
+    background: #1c2529;
+}
+#tabs section {
+    display: none;
+    text-align: left;
+}
+#tabs > input {
+    display: none;
+}
+#tabs > label {
+    display: inline-block;
+    margin: 0 0 -1px;
+    font-family: sans-serif;
+    text-align: center;
+    color: #bbb;
+}
+x-star-rating {
+    font-size: 24px;
+    width: 100px;
+    text-align: center;
+    margin: auto;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    cursor: pointer;
+}
+x-star-rating > .star::after {
+    content: '\2605';
+    color: #848484;
+}
+x-star-rating > .star.full::after {
+    content: '\2605';
+    color: #e08e0b;
+}
+#tabs > label:hover {
+    color: #888;
+    cursor: pointer;
+}
+#tabs label {
+    padding: 5px 10px;
+}
+#tabs section {
+    position: relative;
+    border-top: 1px solid #2c3a40;
+    background: #2c3a40;
+}
+#tabs section label {
+    padding: 0;
+}
+#tabs > input:checked + label {
+    color: #dd4b39;
+}
+#tab0:checked ~ #content0,
+#tab1:checked ~ #content1,
+#tab2:checked ~ #content2,
+#tab3:checked ~ #content3,
+#tab4:checked ~ #content4,
+#tab5:checked ~ #content5,
+#tab6:checked ~ #content6,
+#tab7:checked ~ #content7,
+#tab8:checked ~ #content8,
+#tab9:checked ~ #content9,
+#tab10:checked ~ #content10,
+#tab11:checked ~ #content11,
+#tab12:checked ~ #content12 {
+    display: block;
+}
+#header {
+    font-weight: bold;
+    color: #dd4b39;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 12px;
+    display: block;
+}
+#friends ul li {
+    border-bottom: 1px solid #2c3a40;
+    padding: 20px;
+    margin: 0;
+    width: 100%;
+    line-height: 25px;
+    display: block;
+    background: #222d32;
+}
+#friends ul li:hover {
+    background: #2c3a40;
+    cursor: pointer;
+}
+#friends ul li a {
+    font-weight: bold;
+    color: #008d4c;
+}
+#friends .user-img {
+    float: left;
+    width: 50px;
+    height: 50px;
+    border: 1px solid #848484;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+#friends .pull-right {
+    float: right;
+}
+.friend-search {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACUUlEQVQ4jaWUz0tUURiGn/ciEhLiPSODCwkxEhci/gEtXEkEtRIiokIXBW1ahgsJF24K2rhxaRH0J7gR27TJNikhA0WEKxHnnhAZRGLeFnOMaeb2i97NgXO+8/C+3/nulTGdikWsAheAASCzfSRpz/ZBqIRvXRfapHZgUS/6JF0H7toelzSUgIeSarbXJa3mIT/+IzAWcRhYsj0rqd82kk7T2pvqT4AN2wuhEj78EljUiz5gRdJ82t8HNoFtoAlcsj0jaSSdbwI385AfdAJ7AFLMWQDbnyXdB7bykB+1tWIKWAambU9Lmo9FfJKHvPmTw3q9XpX03PYVSfu2b4dK2CiLE4s4Yvt1cloDruUh/9Rek9F6zfGzKJK2ymBJe8BL2wBVYKqzIAOC7SFJp8D2WcwypXhvJTWAfmC4DNi+NjsLOiWpabtJa5x6uoCSjiUVQC9wMb14qWIRM2BMUh/QkNT1ypntPdu7qS8zkiZ/Y3DQ9pztzPYBsNMFBPYlrdMa2lFgORZxOLn54SwWsWp7SdKEJCS9sb3b1RJjYhH7gVfAVQDbXyS9AN7R6uuY7TlJEykVwCLwLFRCowuYXEzaXpF0+eySpIbtpqQ+25kk0j7p+14E1vKQn5QBs9Sje5Ju2a7SGo0MaAAHKeZHSQ+BQeA4OV09g6rz95XAo7SGdth2j6RD4H3qWY+kO8BT2+clfbW9IGktD/lJF/BvVNSLXkkPbD+WNGC7BtwIlbCT/fF2iUIlnNpeBR4lWE3SUWnkf1Es4jlgDDgC9vKQN/8LWKbvPAlBn/Jn3fcAAAAASUVORK5CYII=) no-repeat 20px center;
+    border: none;
+    color: #eee;
+    padding: 20px 20px 20px 50px;
+    width: 100%;
+    background-color: #1c2529;
+    -webkit-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    -moz-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+    box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+}
+.activity ul {
+    list-style: none;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    position: relative;
+}

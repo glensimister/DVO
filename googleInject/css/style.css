@@ -1,0 +1,15 @@
+x-star-rating {
+    font-size: 20px;
+    width: 87px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    cursor: pointer;
+}
+x-star-rating > .star::after {
+    content: '\2605';
+    color: #848484;
+}
+x-star-rating > .star.full::after {
+    content: '\2605';
+    color: #e08e0b;
+}

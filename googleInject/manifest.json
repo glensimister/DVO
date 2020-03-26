@@ -1,0 +1,31 @@
+{
+    "name": "DVO Google Inject",
+    "version": "0.0.1",
+    "manifest_version": 2,
+    "description": "Inject DVO search results into Google",
+    "permissions": ["storage"],
+    "page_action": {
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png",
+            "128": "icons/icon128.png"
+        }
+    },
+    "web_accessible_resources": [
+        "css/*",
+        "js/*"
+     ],
+    "content_scripts": [
+        {
+            "matches": [
+        "<all_urls>"
+      ],
+            "js": [
+        "js/custom-elements.min.js",
+        "js/inject.js",
+        "js/jquery-3.3.1.js",
+        "js/StarRating.js" //only used on test page
+      ]
+    }
+  ]
+}

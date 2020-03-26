@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>DVO PROFILE</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/jquery-ui.css">
+</head>
+
+
+<body style="width:400px;">
+    <div id="container">
+
+        <div id="tabs">
+            <input id="tab1" type="radio" name="tabs" checked>
+            <label for="tab1"><span><i class="fa fa-home"></i></span></label>
+
+            <input id="tab2" type="radio" name="tabs">
+            <label for="tab2"><span><i class="fa fa-info-circle"></i></span></label>
+
+            <input id="tab3" type="radio" name="tabs">
+            <label for="tab3"><span><i class="fa fa-user-plus"></i></span></label>
+
+            <input id="tab4" type="radio" name="tabs">
+            <label for="tab4"><span><i class="fa fa-history"></i></span></label>
+
+            <section id="content1">
+                <div class="logo">
+                    <a href="#/"><b>Glen</b> Simister</a>
+                </div>
+                <div class="left">
+                    <x-star-rating value="3" number="5"></x-star-rating>
+                    <!--<img src="img/profilepic.jpg" class="user-image-large" />-->
+                    <img src="" class="user-image-large" />
+                    <div id="sidebar">
+                        <div class="sidebar-header">DESIGNER / DEVELOPER / WRITER</div>
+                        <ul id="details">
+                            <li><i class="fa fa-at"></i> <span>glen_simister@yahoo.co.uk</span></li>
+                            <li><i class="fa fa-phone"></i> <span>(+44) 07561179745</span></li>
+                            <li><i class="fa fa-external-link"></i> <span>dvo.org</span></li>
+                        </ul>
+                    </div>
+                    <div class="add-friend">
+                        <button class="btn btn-red" style="display:block; margin:auto;"><i class="fa fa-user-plus" style="margin-right:5px;"></i>ADD FRIEND</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="content2">
+                <span id="header" href="">ABOUT</span>
+                <div class="inner"><p>Hi my name is Glen. I currently work for a company called Lepide.com where I write articles about data security. In the limited spare time that I have I mess around with open-source projects. I am currently developing a decentralized governance model/socia media platform called Dvo. The technical specs are under construction and will be subject to change. If you are a developer and would like to help me out I would greatly appreciate it.</p></div>
+            </section>
+
+            <section id="content3">
+                <div id="friends">
+                    <a id="header" href="">FRIENDS (3)</a>
+                    <input type="text" class="friend-search" value="Search friends..." />
+                    <ul>
+                        <li><img src="img/user1-128x128.jpg" class="user-img" alt="User Image">
+                            <span><a href="">Bob Smith</a><span class="pull-right"><button class="btn-small btn-red">PROFILE</button>&nbsp;<button class="btn-small btn-blue">UNFRIEND</button></span>
+                            <br>2 mutual friends
+                            </span>
+                        </li>
+                        <li><img src="img/user6-128x128.jpg" class="user-img" alt="User Image">
+                            <span><a href="">Mike Jones</a><span class="pull-right"><button class="btn-small btn-red">PROFILE</button>&nbsp;<button class="btn-small btn-blue">UNFRIEND</button></span>
+                            <br>21 mutual friends
+                            </span>
+                        </li>
+                        <li><img src="img/user7-128x128.jpg" class="user-img" alt="User Image">
+                            <span><a href="">Jane Jackson</a><span class="pull-right"><button class="btn-small btn-red">PROFILE</button>&nbsp;<button class="btn-small btn-blue">UNFRIEND</button></span>
+                            <br>5 mutual friends
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="content4">
+                <span id="header" href="">ACTIVITY</span>
+                <div class="activity inner">
+                    <ul>
+                        <li>10/08/2019<i class="fa fa-close delete-icon"></i></li>
+                        <li><a href="">You liked Bob Smith's photo</a></li>
+                    </ul>
+                                        <ul>
+                        <li>09/08/2019<i class="fa fa-close delete-icon"></i></li>
+                        <li><a href="">You commented on Sarah Jane's post</a></li>
+                    </ul>
+                                        <ul>
+                        <li>07/08/2019<i class="fa fa-close delete-icon"></i></li>
+                        <li><a href="">You voted for Mike Jones</a></li>
+                    </ul>
+                                        <ul>
+                        <li>06/08/2019<i class="fa fa-close delete-icon"></i></li>
+                        <li><a href="">You shared a photo</a></li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="js/gun.js"></script>
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/sea.js"></script>
+    <script src="js/webrtc.js"></script>
+    <script src="js/imgToBase64.js"></script>
+    <script src="js/custom-elements.min.js"></script>
+    <script type="module" src="js/StarRating.js"></script>
+</body>
+
+</html>

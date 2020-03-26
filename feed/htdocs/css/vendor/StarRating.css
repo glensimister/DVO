@@ -1,0 +1,18 @@
+x-star-rating {
+    font-family: 'Ionicons';
+    display: inline-flex;
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 25px;
+}
+
+x-star-rating > .star::after {
+    content: '\f2fc';
+    color: #848484;
+}
+
+x-star-rating > .star.full::after {
+    content: '\f2fc';
+    color: #e08e0b;
+}
+

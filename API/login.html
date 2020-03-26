@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LOGIN</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/buttons.css">
+</head>
+
+
+<body>
+    <div id="login">
+        <img class="logo" src="images/logo.png" />
+        <div id="confirmation" style="display:none;">
+            <p>Welcome <span class="name"></span>!</p>
+            <p>NOTE: To update your profile picture, goto any photo on the internet, right click, and select "Make profile picture".</p>
+        </div>
+        <button class="btn btn-green logout" style="display:none; margin:20px auto;">LOGOUT</button>
+        <div id="form">
+            <h4>LOGIN</h4>
+            <div class="form-group">
+                <p>Username</p>
+                <input type="text" class="form-control username" value="GuestUser">
+            </div>
+            <div class="form-group">
+                <p>Password</p>
+                <input type="password" class="form-control password" value="password">
+            </div>
+            <button class="btn btn-red login">LOGIN</button>
+            <a class="createAccount">Create account</a>
+        </div>
+    </div>
+    <div id="register" style="display:none;">
+        <div id="form">
+            <h4>REGISTER</h4>
+            <div class="form-group">
+                <p>Name</p>
+                <input type="text" class="form-control profile-name" value="Bob Smith">
+            </div>
+            <div class="form-group">
+                <p>Username</p>
+                <input type="text" class="form-control username" value="GuestUser">
+            </div>
+            <div class="form-group">
+                <p>Password</p>
+                <input type="password" class="form-control password" value="password">
+            </div>
+            <button class="btn btn-blue register">REGISTER</button>
+        </div>
+    </div>
+
+    <script src="js/gun.js"></script>
+    <script src="js/sea.js"></script>
+    <script src="js/webrtc.js"></script>
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/login.js"></script>
+</body>
+
+</html>

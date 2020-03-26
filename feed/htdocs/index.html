@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/grid.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <!-- this needs to go in vendor -->
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/vendor/select2.min.css">
+    <link rel="stylesheet" href="css/vendor/animate.css">
+    <link rel="stylesheet" href="css/vendor/jquery-ui.css">
+</head>
+
+<body>
+    <div id="feed">
+        <img class="profile" src="">
+        <status-update></status-update>
+        <post-categories></post-categories>
+        <div class="post-feed">
+            <display-posts></display-posts>
+        </div>
+    </div>
+
+    <!---------- Vendor -------------->
+    <script src="js/vendor/jquery-3.3.1.js"></script>
+    <script src="js/vendor/sammy-latest.min.js"></script>
+    <script src="js/vendor/select2.full.min.js"></script>
+
+    <!---------- CDN -------------->
+    <script src="js/vendor/gun.js"></script>
+    <script src="js/vendor/sea.js"></script>
+    <script src="js/vendor/webrtc.js"></script>
+
+    <!---------- Global  -------------->
+    <!--<script src="js/routing.js"></script>-->
+    <!--<script src="js/index.js"></script>-->
+
+    <script type="module" src="js/components/toolBar.js"></script>
+    <script type="module" src="js/components/displayPosts.js"></script>
+    <script type="module" src="js/components/statusUpdate.js"></script>
+    <script type="module" src="js/components/postCategories.js"></script>
+
+</body>
+
+</html>

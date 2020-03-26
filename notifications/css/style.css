@@ -1,0 +1,102 @@
+    html {
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+        
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        ol,
+        ul {
+            margin: 0;
+            padding: 0;
+            font-weight: normal;
+        }
+        
+        ol,
+        ul {
+            list-style: none;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        body {
+            width: 400px;
+            font-family: sans-serif;
+            font-size: 14px;
+            /*padding: 20px;*/
+            background: #1c2529;
+            color: #fff;
+            -webkit-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+            -moz-box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+            box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
+            /*background: #fff;
+            -webkit-box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47), 0px 10px 19px -17px rgba(0, 0, 0, 0.38);
+            -moz-box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47), 0px 10px 19px -17px rgba(0, 0, 0, 0.38);
+            box-shadow: inset 0px 0px 33px -1px rgba(238, 238, 238, 0.47), 0px 10px 19px -17px rgba(0, 0, 0, 0.38);
+            font-family: 'OpenSans-Regular', sans-serif;*/
+        }
+        
+        a {
+            color: #008d4c;
+            text-decoration: none;
+        }
+        
+        #header {
+            font-weight: bold;
+            color: #dd4b39;
+            width: 100%;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px;
+            font-size: 12px;
+            display: block;
+        }
+        
+        #notifications ul li {
+            border-bottom: 1px solid #2c3a40;
+            padding: 20px;
+            margin: 0;
+            width: 100%;
+            line-height: 25px;
+            display: block;
+            background: #222d32;
+        }
+        
+        #notifications ul li:hover {
+            background: #2c3a40;
+            cursor: pointer;
+        }
+        
+        #notifications ul li a {
+            font-weight: bold;
+            color: #008d4c;
+        }
+        
+        .user-img {
+            float: left;
+            width: 50px;
+            height: 50px;
+            border: 1px solid #848484;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .pull-right {
+            float: right;
+        }
+    }

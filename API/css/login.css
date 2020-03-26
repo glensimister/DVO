@@ -1,0 +1,58 @@
+body {
+    background: #1c2529;
+    font-size: 14px;
+    font-family: sans-serif;
+    line-height: 20px;
+}
+#login,
+#register,
+#confirmation {
+    width: 400px;
+}
+.createAccount {
+    color: #008d4c;
+    display: block;
+    text-decoration: underline;
+    font-size: 16px;
+    margin: 20px 0;
+    cursor: pointer;
+}
+#confirmation {
+    width: 100%;
+}
+#login,
+#register {
+    padding: 0 20px 20px 20px;
+    text-align: center;
+    font-family: sans-serif;
+    background: #1c2529;
+    color: #fff;
+}
+.logo {
+    /* maybe crop logo image to size */
+    width: 150px;
+    height: auto; 
+    margin: 20px 20px 0px 20px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-control {
+    display: block;
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    box-sizing: border-box;
+}
