@@ -11,4 +11,4 @@
 
 <p>DVO will provide the API for Devolution - a decentralized governance model (screenshot below)</p>
 
-![DVO Screenshot](devolution.gif)
+![Devolution Screenshot](devolution.png)
