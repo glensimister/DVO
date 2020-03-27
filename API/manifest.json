@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "manifest_version": 2,
     "description": "DVO API",
-    "permissions": ["storage","contextMenus"],
+    "permissions": ["storage", "contextMenus"],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     "externally_connectable": {
         "matches": ["http://localhost:8000/", "<all_urls>"],

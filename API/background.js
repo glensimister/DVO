@@ -5,6 +5,7 @@ user.recall({
     sessionStorage: true
 });
 
+
 /************* API for external apps and extensions (NOTE: Internal API is below) *************/
 
 chrome.runtime.onConnectExternal.addListener(function (port) {
@@ -90,33 +91,24 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         else if (request.type == "likePage") {
             (async function () {
 
-                let numLikes = await getLikes(request.pageUrl);
-                let numDislikes = await getDislikes(request.pageUrl);
-                let hasLiked = false;
-                let hasDisliked = false;
-
-                if (numLikes > 0) {
-                    hasLiked = await hasLikedBefore(request.pageUrl);
-                }
-
-                if (numDislikes > 0) {
-                    hasDisliked = await hasDislikedBefore(request.pageUrl);
-                }
+                let hasLiked = await hasLikedBefore(request.pageUrl);
+                let hasDisliked = await hasDislikedBefore(request.pageUrl);
 
                 if (hasLiked) {
                     removeLikePage(request.pageUrl);
-                    numLikes = parseInt(numLikes) - 1;
+                } else {
+                    let id = user.is.pub;
+                    user.get('pageReviews').get(request.pageUrl).get('likes').set({
+                        userId: id
+                    });
                 }
 
                 if (hasDisliked) {
                     removeDislikePage(request.pageUrl);
-                    numDislikes = parseInt(numDislikes) - 1;
                 }
 
-                if (!hasLiked) {
-                    user.get('pageReviews').get(request.pageUrl).get('likes').get(user.is.pub).put(request.date);
-                    numLikes = parseInt(numLikes) + 1;
-                }
+                let numLikes = await getLikes(request.pageUrl);
+                let numDislikes = await getDislikes(request.pageUrl);
 
                 port.postMessage({
                     type: "fromLikePage",
@@ -132,34 +124,27 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         else if (request.type == "dislikePage") {
             (async function () {
 
-                let numLikes = await getLikes(request.pageUrl);
-                let numDislikes = await getDislikes(request.pageUrl);
-                let hasLiked = false;
-                let hasDisliked = false;
 
-                if (numLikes > 0) {
-                    hasLiked = await hasLikedBefore(request.pageUrl);
-                }
+                let hasLiked = await hasLikedBefore(request.pageUrl);
+                let hasDisliked = await hasDislikedBefore(request.pageUrl);
 
-                if (numDislikes > 0) {
-                    hasDisliked = await hasDislikedBefore(request.pageUrl);
+
+                if (hasDisliked) {
+                    removeDislikePage(request.pageUrl);
+                } else {
+                    let id = user.is.pub;
+                    user.get('pageReviews').get(request.pageUrl).get('dislikes').set({
+                        userId: id
+                    });
                 }
 
                 if (hasLiked) {
                     removeLikePage(request.pageUrl);
-                    numLikes = parseInt(numLikes) - 1;
                 }
 
-                if (hasDisliked) {
-                    removeDislikePage(request.pageUrl);
-                    numDislikes = parseInt(numDislikes) - 1;
-                }
+                let numLikes = await getLikes(request.pageUrl);
+                let numDislikes = await getDislikes(request.pageUrl);
 
-                if (!hasDisliked) {
-                    user.get('pageReviews').get(request.pageUrl).get('dislikes').get(user.is.pub).put(request.date);
-                    numDislikes = parseInt(numDislikes) + 1;
-                }
-                
                 port.postMessage({
                     type: "fromDislikePage",
                     likes: numLikes,
@@ -177,16 +162,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                 let numLikes = await getLikes(request.pageUrl);
                 let numDislikes = await getDislikes(request.pageUrl);
-                let hasLiked = false;
-                let hasDisliked = false;
-
-                if (numLikes > 0) {
-                    hasLiked = await hasLikedBefore(request.pageUrl);
-                }
-
-                if (numDislikes > 0) {
-                    hasDisliked = await hasDislikedBefore(request.pageUrl);
-                }
+                let hasLiked = await hasLikedBefore(request.pageUrl);
+                let hasDisliked = await hasDislikedBefore(request.pageUrl);
 
                 port.postMessage({
                     type: "pageLikes",
@@ -241,29 +218,38 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     }
 
     async function hasLikedBefore(pageUrl) {
+        let id = user.is.pub;
+        let liked = false;
         return new Promise(resolve => {
-            user.get('pageReviews').get(pageUrl).get('likes').map().once(function (data, key) {
-                console.log(data);
-                if (data === null) {
-                    resolve(false);
-                } else {
-                    resolve(true);
+            user.get('pageReviews').get(pageUrl).get('likes').map().once(function (data) {
+                if (data !== null) {
+                    if (data.userId === id) {
+                        liked = true;
+                        console.log("userId: " + data.userId);
+                    } else {
+                        liked = false;
+                    }
                 }
             });
+            resolve(liked);
         });
     }
 
-
     async function hasDislikedBefore(pageUrl) {
+        let id = user.is.pub;
+        let disliked = false;
         return new Promise(resolve => {
-            user.get('pageReviews').get(pageUrl).get('dislikes').map().once(function (data, key) {
-                console.log(data);
-                if (data === null) {
-                    resolve(false);
-                } else {
-                    resolve(true);
+            user.get('pageReviews').get(pageUrl).get('dislikes').map().once(function (data) {
+                if (data !== null) {
+                    if (data.userId === id) {
+                        disliked = true;
+                        console.log("userId: " + data.userId);
+                    } else {
+                        disliked = false;
+                    }
                 }
             });
+            resolve(disliked);
         });
     }
 
