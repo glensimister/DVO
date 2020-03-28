@@ -96,9 +96,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let id = user.is.pub;
                 
                 //hasLiked and hasDisliked are arrays, e.g. 
-                //hasLiked[0] : true
+                //hasLiked[0] : true or false
                 //hasLiked[1] : the key of the object
-
+                
                 if (request.reactType === 'like') {
                     if (hasLiked[0]) {
                         console.log("deleting: " + hasLiked[1]);
