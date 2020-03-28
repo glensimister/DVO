@@ -95,6 +95,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let id = user.is.pub;
                 
+                //hasLiked and hasDisliked are arrays, e.g. 
                 //hasLiked[0] : true
                 //hasLiked[1] : the key of the object
 
