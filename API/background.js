@@ -111,10 +111,11 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let numDislikes = await getLikes(request.pageUrl, 'dislikes');
 
                 port.postMessage({
-                    type: "fromLikePage",
+                    type: "pageLikes",
                     likes: numLikes,
                     dislikes: numDislikes,
-                    hasLiked: hasLiked
+                    hasLiked: hasLiked,
+                    hasDisliked: hasDisliked
                 });
 
             })();
@@ -146,9 +147,10 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let numDislikes = await getLikes(request.pageUrl, 'dislikes');
 
                 port.postMessage({
-                    type: "fromDislikePage",
+                    type: "pageLikes",
                     likes: numLikes,
                     dislikes: numDislikes,
+                    hasLiked: hasLiked,
                     hasDisliked: hasDisliked
                 });
 
@@ -214,7 +216,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 if (data === undefined || data === null) {
                     resolve(false);
                 } else {
-                    record.map().once(function (data, key) {
+                    record.map().once(function (data) {
                         if (data !== null) {
                             if (data.userId === id) {
                                 resolve(true);

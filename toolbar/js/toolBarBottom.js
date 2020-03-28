@@ -133,7 +133,7 @@ class ToolBarBottom extends HTMLElement {
                 // if the page hasn't already been liked, toggle the class, else, do nothing
 
                 port.onMessage.addListener(function (res) {
-                    if (res.type === "fromLikePage") {
+                    if (res.type === "pageLikes") {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
@@ -164,7 +164,7 @@ class ToolBarBottom extends HTMLElement {
                 // if the page has already been liked, retract the like, else, toggle class
 
                 port.onMessage.addListener(function (res) {
-                    if (res.type === "fromDislikePage") {
+                    if (res.type === "pageLikes") {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
