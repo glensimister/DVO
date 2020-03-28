@@ -5,7 +5,6 @@ user.recall({
     sessionStorage: true
 });
 
-
 /************* API for external apps and extensions (NOTE: Internal API is below) *************/
 
 chrome.runtime.onConnectExternal.addListener(function (port) {
@@ -93,31 +92,36 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                 let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
+                let page = user.get('pageReviews').get(request.pageUrl);
                 let id = user.is.pub;
 
                 if (request.reactType === 'like') {
                     if (hasLiked[0]) {
-                        removeLikePage(request.pageUrl, hasLiked[1]);
+                        console.log("deleting: " + hasLiked[1]);
+                        page.get('likes').get(hasLiked[1]).put(null);
                     } else {
-                        user.get('pageReviews').get(request.pageUrl).get('likes').set({
+                        page.get('likes').set({
                             userId: id
                         });
                     }
                     if (hasDisliked[0]) {
-                        removeDislikePage(request.pageUrl, hasDisliked[1]);
+                        console.log("deleting: " + hasDisliked[1]);
+                        page.get('likes').get(hasDisliked[1]).put(null);
                     }
                 }
 
                 if (request.reactType === 'dislike') {
                     if (hasDisliked[0]) {
-                        removeDislikePage(request.pageUrl, hasDisliked[1]);
+                        console.log("deleting: " + hasDisliked[1]);
+                        page.get('likes').get(hasDisliked[1]).put(null);
                     } else {
-                        user.get('pageReviews').get(request.pageUrl).get('dislikes').set({
+                        page.get('dislikes').set({
                             userId: id
                         });
                     }
                     if (hasLiked[0]) {
-                        removeLikePage(request.pageUrl, hasLiked[1]);
+                        console.log("deleting: " + hasLiked[1]);
+                        page.get('likes').get(hasLiked[1]).put(null);
                     }
                 }
 
@@ -163,16 +167,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /********** Helper functions **********/
-
-    function removeLikePage(pageUrl, likedKey) {
-        console.log("deleting: " + likedKey);
-        user.get('pageReviews').get(pageUrl).get('likes').get(likedKey).put(null); // can maybe move this above
-    }
-
-    function removeDislikePage(pageUrl, dislikedKey) {
-        console.log("deleting: " + dislikedKey);
-        user.get('pageReviews').get(pageUrl).get('dislikes').get(dislikedKey).put(null);
-    }
 
     /*async function getLikes(pageUrl, type) {
         return new Promise(resolve => {
