@@ -141,11 +141,6 @@ class ToolBarBottom extends HTMLElement {
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
 
-                        /*likedKey = res.likedKey;
-                        dislikedKey = res.dislikedKey;
-                        $(like).data('key', likedKey);
-                        $(dislike).data('key', dislikedKey);*/
-
                         if (res.hasDisliked) {
                             $(dislike).find('i').toggleClass("gray blue");
                         }
@@ -177,11 +172,6 @@ class ToolBarBottom extends HTMLElement {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
-
-                        /*likedKey = res.likedKey;
-                        dislikedKey = res.dislikedKey;
-                        $(like).data('key', likedKey);
-                        $(dislike).data('key', dislikedKey);*/
 
                         if (res.hasLiked) {
                             $(like).find('i').toggleClass("gray red");

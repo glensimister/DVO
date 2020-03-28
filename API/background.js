@@ -143,6 +143,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             (async function () {
 
                 let numLikes = await getLikes(request.pageUrl, 'likes');
+                console.log("numLikes:  " + numLikes);
                 let numDislikes = await getLikes(request.pageUrl, 'dislikes');
                 let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
@@ -152,9 +153,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     likes: numLikes,
                     dislikes: numDislikes,
                     hasLiked: hasLiked[0],
-                    hasDisliked: hasDisliked[0],
-                    likedKey: hasLiked[1],
-                    dislikedKey: hasDisliked[1]
+                    hasDisliked: hasDisliked[0]
                 });
             })();
 
@@ -175,15 +174,37 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         user.get('pageReviews').get(pageUrl).get('dislikes').get(dislikedKey).put(null);
     }
 
-    async function getLikes(pageUrl, type) {
+    /*async function getLikes(pageUrl, type) {
         return new Promise(resolve => {
             user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
+                console.log(data);
                 if (data === null || data === undefined) {
                     resolve(0);
                 } else {
                     let len = Object.keys(data).length - 1;
                     console.log("Length: " + len);
                     resolve(len);
+                }
+            });
+        });
+    }*/
+
+    async function getLikes(pageUrl, type) {
+        let count = 0;
+        return new Promise(resolve => {
+            const record = user.get('pageReviews').get(pageUrl).get(type);
+            record.once(function (data) {
+                if (data === undefined || data === null) {
+                    resolve(0);
+                } else {
+                    record.map().once(function (data) {
+                        if (data === null) {
+                            count--;
+                        }
+                        count++;
+                        console.log(count);
+                        resolve(count);
+                    });
                 }
             });
         });
