@@ -94,7 +94,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
 
-                if (hasLiked) {
+                if (hasLiked[0]) {
                     removeLikePage(request.pageUrl);
                 } else {
                     let id = user.is.pub;
@@ -103,7 +103,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     });
                 }
 
-                if (hasDisliked) {
+                if (hasDisliked[0]) {
                     removeDislikePage(request.pageUrl);
                 }
 
@@ -114,8 +114,10 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     type: "pageLikes",
                     likes: numLikes,
                     dislikes: numDislikes,
-                    hasLiked: hasLiked,
-                    hasDisliked: hasDisliked
+                    hasLiked: hasLiked[0],
+                    hasDisliked: hasDisliked[0], 
+                    likedKey: hasLiked[1],
+                    dislikedKey: hasDisliked[1]
                 });
 
             })();
@@ -130,7 +132,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
 
 
-                if (hasDisliked) {
+                if (hasDisliked[0]) {
                     removeDislikePage(request.pageUrl);
                 } else {
                     let id = user.is.pub;
@@ -139,7 +141,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     });
                 }
 
-                if (hasLiked) {
+                if (hasLiked[0]) {
                     removeLikePage(request.pageUrl);
                 }
 
@@ -150,8 +152,10 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     type: "pageLikes",
                     likes: numLikes,
                     dislikes: numDislikes,
-                    hasLiked: hasLiked,
-                    hasDisliked: hasDisliked
+                    hasLiked: hasLiked[0],
+                    hasDisliked: hasDisliked[0], 
+                    likedKey: hasLiked[1],
+                    dislikedKey: hasDisliked[1]
                 });
 
             })();
@@ -173,8 +177,10 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     type: "pageLikes",
                     likes: numLikes,
                     dislikes: numDislikes,
-                    hasLiked: hasLiked,
-                    hasDisliked: hasDisliked
+                    hasLiked: hasLiked[0],
+                    hasDisliked: hasDisliked[0], 
+                    likedKey: hasLiked[1],
+                    dislikedKey: hasDisliked[1]
                 });
             })();
 
@@ -212,14 +218,13 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         return new Promise(resolve => {
             const record = user.get('pageReviews').get(pageUrl).get(type);
             record.once(function (data) {
-                console.log(data);
                 if (data === undefined || data === null) {
                     resolve(false);
                 } else {
-                    record.map().once(function (data) {
+                    record.map().once(function (data, key) {
                         if (data !== null) {
                             if (data.userId === id) {
-                                resolve(true);
+                                resolve([true, key]);
                             }
                         }
                     });
