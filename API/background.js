@@ -10,7 +10,6 @@ user.recall({
 chrome.runtime.onConnectExternal.addListener(function (port) {
     port.onMessage.addListener(async function (request) {
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////
         if (request.type == "isUserLoggedIn") {
             if (user.is) {
                 port.postMessage({
@@ -68,7 +67,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             });
             return true;
         }
-
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type == "getProfilePicture") {
             let photo = await getProfilePicture();
@@ -288,7 +286,6 @@ chrome.runtime.onConnect.addListener(function (port) {
     console.assert(port.name == "dvo"); // Do i need this? 
     port.onMessage.addListener(async function (request) {
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////
         if (request.type == "isUserLoggedIn") {
             if (user.is) {
                 port.postMessage({
