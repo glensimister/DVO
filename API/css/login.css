@@ -9,6 +9,9 @@ body {
 #confirmation {
     width: 400px;
 }
+a {
+    color: #008d4c;
+}
 .createAccount {
     color: #008d4c;
     display: block;
@@ -31,7 +34,7 @@ body {
 .logo {
     /* maybe crop logo image to size */
     width: 150px;
-    height: auto; 
+    height: auto;
     margin: 20px 20px 0px 20px;
 }
 .form-group {
