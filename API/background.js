@@ -135,9 +135,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     likes: numLikes,
                     dislikes: numDislikes,
                     hasLiked: hasLiked[0],
-                    hasDisliked: hasDisliked[0],
-                    likedKey: hasLiked[1],
-                    dislikedKey: hasDisliked[1]
+                    hasDisliked: hasDisliked[0]
                 });
 
             })();
