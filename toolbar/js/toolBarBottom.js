@@ -28,8 +28,8 @@ class ToolBarBottom extends HTMLElement {
             let val;
 
             obj = await getPageLikes();
-            totLikes = obj.likes;
-            totDislikes = obj.dislikes;
+            totLikes = parseInt(obj.likes);
+            totDislikes = parseInt(obj.dislikes);
             hasLiked = obj.hasLiked;
             hasDisliked = obj.hasDisliked;
             score = calculateScore();
@@ -124,10 +124,11 @@ class ToolBarBottom extends HTMLElement {
 
                 $(like).find('i').toggleClass("red gray");
                 
-                // get data attibute and post to likePage. can use this as they key to delete data
+                // get data attibute and post to likePage. can use this as they key to delete data. also maybe combine like and dislike in api
 
                 port.postMessage({
-                    type: "likePage",
+                    type: "react",
+                    reactType: "like",
                     pageUrl: url,
                     date: getDate()
                 });
@@ -158,7 +159,8 @@ class ToolBarBottom extends HTMLElement {
                 $(dislike).find('i').toggleClass("blue gray");
 
                 port.postMessage({
-                    type: "dislikePage",
+                    type: "react",
+                    reactType: "dislike",
                     pageUrl: url,
                     date: getDate()
                 });
