@@ -74,9 +74,9 @@ class ToolBarBottom extends HTMLElement {
 <div><span class="arrow">&#9650;</span></div>
 </div>
 <div class="toolbar-bottom">
-<div id="like" data-key="${obj.likedKey}"><i class="${likeClass} fa fa-thumbs-up"></i></div>
+<div id="like"><i class="${likeClass} fa fa-thumbs-up"></i></div>
 <div id="likes">${totLikes}</div>
-<div id="dislike" data-key="${obj.dislikedKey}"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
+<div id="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
 <div id="dislikes">${totDislikes}</div>
 <div><span id="score">${score}</span>%</div>
 </div>
@@ -123,11 +123,11 @@ class ToolBarBottom extends HTMLElement {
             $(like).on('click', async function () {
 
                 $(like).find('i').toggleClass("red gray");
-                
+
                 // get data attibute and post to likePage. can use this as they key to delete data. also maybe combine like and dislike in api
 
                 port.postMessage({
-                    type: "react",
+                    type: "reaction",
                     reactType: "like",
                     pageUrl: url,
                     date: getDate()
@@ -140,6 +140,11 @@ class ToolBarBottom extends HTMLElement {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
+
+                        /*likedKey = res.likedKey;
+                        dislikedKey = res.dislikedKey;
+                        $(like).data('key', likedKey);
+                        $(dislike).data('key', dislikedKey);*/
 
                         if (res.hasDisliked) {
                             $(dislike).find('i').toggleClass("gray blue");
@@ -159,7 +164,7 @@ class ToolBarBottom extends HTMLElement {
                 $(dislike).find('i').toggleClass("blue gray");
 
                 port.postMessage({
-                    type: "react",
+                    type: "reaction",
                     reactType: "dislike",
                     pageUrl: url,
                     date: getDate()
@@ -172,6 +177,11 @@ class ToolBarBottom extends HTMLElement {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
+
+                        /*likedKey = res.likedKey;
+                        dislikedKey = res.dislikedKey;
+                        $(like).data('key', likedKey);
+                        $(dislike).data('key', dislikedKey);*/
 
                         if (res.hasLiked) {
                             $(like).find('i').toggleClass("gray red");

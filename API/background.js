@@ -88,37 +88,36 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('comment').put(request.update);
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
-        else if (request.type == "react") {
+        else if (request.type == "reaction") {
             (async function () {
 
                 let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
+                let id = user.is.pub;
 
                 if (request.reactType === 'like') {
                     if (hasLiked[0]) {
-                        removeLikePage(request.pageUrl);
+                        removeLikePage(request.pageUrl, hasLiked[1]);
                     } else {
-                        let id = user.is.pub;
                         user.get('pageReviews').get(request.pageUrl).get('likes').set({
                             userId: id
                         });
                     }
                     if (hasDisliked[0]) {
-                        removeDislikePage(request.pageUrl);
+                        removeDislikePage(request.pageUrl, hasDisliked[1]);
                     }
                 }
 
                 if (request.reactType === 'dislike') {
                     if (hasDisliked[0]) {
-                        removeDislikePage(request.pageUrl);
+                        removeDislikePage(request.pageUrl, hasDisliked[1]);
                     } else {
-                        let id = user.is.pub;
                         user.get('pageReviews').get(request.pageUrl).get('dislikes').set({
                             userId: id
                         });
                     }
                     if (hasLiked[0]) {
-                        removeLikePage(request.pageUrl);
+                        removeLikePage(request.pageUrl, hasLiked[1]);
                     }
                 }
 
@@ -166,12 +165,14 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
     /********** Helper functions **********/
 
-    function removeLikePage(pageUrl) {
-        user.get('pageReviews').get(pageUrl).get('likes').put(null);
+    function removeLikePage(pageUrl, likedKey) {
+        console.log("deleting: " + likedKey);
+        user.get('pageReviews').get(pageUrl).get('likes').get(likedKey).put(null); // can maybe move this above
     }
 
-    function removeDislikePage(pageUrl) {
-        user.get('pageReviews').get(pageUrl).get('dislikes').put(null);
+    function removeDislikePage(pageUrl, dislikedKey) {
+        console.log("deleting: " + dislikedKey);
+        user.get('pageReviews').get(pageUrl).get('dislikes').get(dislikedKey).put(null);
     }
 
     async function getLikes(pageUrl, type) {
@@ -194,13 +195,15 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             const record = user.get('pageReviews').get(pageUrl).get(type);
             record.once(function (data) {
                 if (data === undefined || data === null) {
-                    resolve(false);
+                    resolve([false, undefined]);
                 } else {
                     record.map().once(function (data, key) {
                         if (data !== null) {
                             if (data.userId === id) {
                                 resolve([true, key]);
                             }
+                        } else {
+                            resolve([false, undefined]);
                         }
                     });
                 }
