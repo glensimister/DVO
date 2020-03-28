@@ -94,6 +94,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let id = user.is.pub;
+                
+                //hasLiked[0] : true
+                //hasLiked[1] : the key of the object
 
                 if (request.reactType === 'like') {
                     if (hasLiked[0]) {
