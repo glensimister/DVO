@@ -4,7 +4,7 @@ $(document).ready(async function () {
     let port = chrome.runtime.connect(laserExtensionId);
 
 
-    /*async function getPageUrl() {
+    async function getPageUrl() {
         return new Promise(resolve => {
             chrome.tabs.query({
                 'active': true,
@@ -13,10 +13,10 @@ $(document).ready(async function () {
                 resolve(tabs[0].url);
             });
         });
-    }*/
+    }
 
-    //let url = await getPageUrl();
-    let url = window.location.toString();
+    let url = await getPageUrl();
+    //let url = window.location.toString();
 
     getComments();
 
@@ -30,7 +30,8 @@ $(document).ready(async function () {
         return date;
     }
 
-    $(".post-comment-btn").on('click', function () {
+    $(".post-comment-btn").on('click', function (e) {
+        e.stopImmediatePropagation();
         let newComment = $(".post-comment").val();
         port.postMessage({
             type: "addComment",
@@ -49,17 +50,24 @@ $(document).ready(async function () {
         });
         port.onMessage.addListener(function (res) {
             if (res.type == "pageComments") {
-                let score = (12 / 2 * 10) / 2;
-                //score = Math.round(score);
+                console.log(res.comments);
+                //console.log(Object.values(res.comments));
+                let json = JSON.parse(res.comments);
 
-                let template = `<div id="${res.key}" class="post">
+                let score = (12 / 2 * 10) / 2;
+                $("#dialogBody").html("");
+                json.forEach(function (item, index) {
+                    console.log(item, index);
+                    //score = Math.round(score);
+
+                    let template = `<div id="${item.key}" class="post">
 <i class="edit-post fa fa-edit"></i>
 <i class="delete-post fa fa-close"></i>
 <div class="post-body">
-<img src="${res.photo}" class="user-image-medium" alt="User Image">
-<span><a href="#">${res.name}</a><span class="date">${res.date}</span></span>
+<img src="${item.photo}" class="user-image-medium" alt="User Image">
+<span><a href="#">${item.name}</a><span class="date">${item.date}</span></span>
 <div class="post-desc">
-<p>${res.response}</p>
+<p>${item.comment}</p>
 </div>
 </div>
 <div class="toolbar-comments">
@@ -71,34 +79,26 @@ $(document).ready(async function () {
 </div>
 </div>
 `;
+                    $("#dialogBody").append(template);
+                    setTimeout(function () {
+                        let score = $('#score').attr('class');
+                        $('.fa-star').each(function (index) {
+                            var num = (index + 1) % 5;
+                            if (num <= score && num > 0)
+                                $(this).addClass('yellow');
+                        });
+                    }, 500);
+
+                    let comment = document.getElementById("comment");
+                    let comments = document.querySelectorAll("#comments");
+                    $('#comments').html(res.count);
+                });
 
                 //<x-star-rating value="${score}" number="5"></x-star-rating>
-                $("#dialogBody").append(template);
+
             }
         });
-    } 
-
-    setTimeout(function () {
-        let score = $('#score').attr('class');
-        $('.fa-star').each(function (index) {
-            var num = (index + 1) % 5;
-            if (num <= score && num > 0)
-                $(this).addClass('yellow');
-        });
-    }, 500);
-
-    let comment = document.getElementById("comment");
-    let comments = document.querySelectorAll("#comments");
-
-    port.postMessage({
-        type: "countComments",
-        pageUrl: url
-    });
-    port.onMessage.addListener(function (res) {
-        if (res.type == "countComments") {
-            $('#comments').html(res.response);
-        }
-    });
+    }
 
     let postDesc = document.querySelector(".post-desc");
 

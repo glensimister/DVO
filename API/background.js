@@ -27,28 +27,88 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type == "getComments") {
-            let photo = await getProfilePicture();
-            let name = await getName();
-            user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data, key) {
-                if (data) {
+            (async function () {
+                let page = user.get('pageReviews').get(request.pageUrl);
+                /*page.get('comments').once(function (data) {
+                    console.log(Object.values(data).length - 1);
+                });*/
+
+                let comments = await getComments();
+                console.log(comments);
+
+                // why do i need setTimeout? Without this the full array won't load
+                setTimeout(function () {
+                    let json = JSON.stringify(comments);
+                    let len = comments.length;
+                    console.log(len);
+                    console.log("JSON: " + json);
                     port.postMessage({
                         type: "pageComments",
-                        key: key,
-                        response: data.comment,
-                        date: data.date,
-                        photo: photo,
-                        name: name
+                        comments: json,
+                        count: len
+                    });
+                }, 100);
+
+                async function getComments() {
+                    let array = [];
+                    let keys = [];
+                    let obj = {};
+                    return new Promise(resolve => {
+                        page.get('comments').map().once(function (data, key) {
+                            if (data) {
+                                if (keys.includes(key)) {
+                                    console.log("duplicate data. skipping...");
+                                } else {
+                                    obj = {
+                                        key: key,
+                                        comment: data.comment,
+                                        date: data.date,
+                                        photo: data.photo,
+                                        name: data.name
+                                    }
+                                    keys.push(key);
+                                    array.push(obj);
+                                    resolve(array);
+                                }
+                            }
+                        });
                     });
                 }
-            });
-            return true;
+
+                /*let photo = await getProfilePicture();
+                let name = await getName();
+                let array = [];
+                page.get('comments').map().once(function (data, key) {
+                    if (data) {
+                        if (array.includes(key)) {
+                            console.log("duplicate");
+                        } else {
+                            array.push(key);
+                            console.log(array);
+                            port.postMessage({
+                                type: "pageComments",
+                                key: key,
+                                response: data.comment,
+                                date: data.date,
+                                photo: photo,
+                                name: name
+                            });
+                        }
+                    }
+                });*/
+                return true;
+            })();
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type == "addComment") {
             if (window.confirm(`This application wants to add a comment`)) {
+                let photo = await getProfilePicture();
+                let name = await getName();
                 user.get('pageReviews').get(request.pageUrl).get('comments').set({
                     comment: request.comment,
-                    date: request.date
+                    date: request.date,
+                    name: name,
+                    photo: photo
                 });
             }
             return true;
@@ -92,11 +152,11 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let id = user.is.pub;
-                
+
                 //hasLiked and hasDisliked are arrays, e.g. 
                 //hasLiked[0] : true or false
                 //hasLiked[1] : the key of the object
-                
+
                 if (request.reactType === 'like') {
                     if (hasLiked[0]) {
                         console.log("deleting: " + hasLiked[1]);
