@@ -29,12 +29,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         else if (request.type == "getComments") {
             (async function () {
                 let page = user.get('pageReviews').get(request.pageUrl);
-                /*page.get('comments').once(function (data) {
-                    console.log(Object.values(data).length - 1);
-                });*/
-
                 let comments = await getComments();
-                console.log(comments);
 
                 // why do i need setTimeout? Without this the full array won't load
                 setTimeout(function () {
@@ -49,6 +44,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     });
                 }, 100);
 
+                // get comments and filter out any duplicates
                 async function getComments() {
                     let array = [];
                     let keys = [];
