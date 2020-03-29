@@ -149,10 +149,12 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                 let numLikes = await getLikes(request.pageUrl, 'likes');
                 let numDislikes = await getLikes(request.pageUrl, 'dislikes');
+                let score = calculatePageScore(numLikes, numDislikes);
 
                 port.postMessage({
                     type: "pageLikes",
                     likes: numLikes,
+                    pageScore: score,
                     dislikes: numDislikes,
                     hasLiked: hasLiked[0],
                     hasDisliked: hasDisliked[0]
@@ -171,11 +173,14 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let numDislikes = await getLikes(request.pageUrl, 'dislikes');
                 let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
                 let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
+                let score = calculatePageScore(numLikes, numDislikes);
+                console.log(score);
 
                 port.postMessage({
                     type: "pageLikes",
                     likes: numLikes,
                     dislikes: numDislikes,
+                    pageScore: score,
                     hasLiked: hasLiked[0],
                     hasDisliked: hasDisliked[0]
                 });
@@ -202,6 +207,17 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             });
         });
     }*/
+
+    function calculatePageScore(numLikes, numDislikes) {
+        let score = numLikes + numDislikes;
+        score = (numLikes / score) * 100;
+        score = Math.round(score);
+        if (isNaN(score) || score === undefined) {
+            return 0;
+        } else {
+            return score;
+        }
+    }
 
     async function getLikes(pageUrl, type) {
         let count = 0;

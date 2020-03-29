@@ -21,7 +21,7 @@ class ToolBarBottom extends HTMLElement {
             let dislikeClass = "blue";
             let totLikes = 0;
             let totDislikes = 0;
-            let score = 0;
+            //let score = 0;
             let hasLiked = false;
             let hasDisliked = false;
             let obj = null;
@@ -32,18 +32,6 @@ class ToolBarBottom extends HTMLElement {
             totDislikes = parseInt(obj.dislikes);
             hasLiked = obj.hasLiked;
             hasDisliked = obj.hasDisliked;
-            score = calculateScore();
-
-            function calculateScore() {
-                score = totLikes + totDislikes;
-                score = (totLikes / score) * 100;
-                score = Math.round(score);
-                if (isNaN(score)) {
-                    return 0;
-                } else {
-                    return score;
-                }
-            }
 
             if (hasLiked)
                 likeClass = "gray";
@@ -78,7 +66,7 @@ class ToolBarBottom extends HTMLElement {
 <div id="likes">${totLikes}</div>
 <div id="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
 <div id="dislikes">${totDislikes}</div>
-<div><span id="score">${score}</span>%</div>
+<div><span id="score">${obj.pageScore}</span>%</div>
 </div>
 `;
 
@@ -140,6 +128,7 @@ class ToolBarBottom extends HTMLElement {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
+                        $(scoreDiv).html(res.pageScore);
 
                         if (res.hasDisliked) {
                             $(dislike).find('i').toggleClass("gray blue");
@@ -172,6 +161,7 @@ class ToolBarBottom extends HTMLElement {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
+                        $(scoreDiv).html(res.pageScore);
 
                         if (res.hasLiked) {
                             $(like).find('i').toggleClass("gray red");
