@@ -74,28 +74,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                         });
                     });
                 }
-
-                /*let photo = await getProfilePicture();
-                let name = await getName();
-                let array = [];
-                page.get('comments').map().once(function (data, key) {
-                    if (data) {
-                        if (array.includes(key)) {
-                            console.log("duplicate");
-                        } else {
-                            array.push(key);
-                            console.log(array);
-                            port.postMessage({
-                                type: "pageComments",
-                                key: key,
-                                response: data.comment,
-                                date: data.date,
-                                photo: photo,
-                                name: name
-                            });
-                        }
-                    }
-                });*/
                 return true;
             })();
         }
@@ -114,21 +92,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "countComments") {
-            let count = 0;
-            user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data) {
-                if (data) {
-                    count++;
-                    port.postMessage({
-                        type: "countComments",
-                        response: count
-                    });
-                }
-            });
-            return true;
-        }
-        //////////////////////////////////////////////////////////////////////////////////////////////////// 
-        else if (request.type == "getProfilePicture") {
+        else if (request.type == "getProfilePicture") { //is this still being used? 
             let photo = await getProfilePicture();
             port.postMessage({
                 type: "photo",
