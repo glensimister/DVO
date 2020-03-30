@@ -25,7 +25,7 @@ class ToolBarBottom extends HTMLElement {
             let hasLiked = false;
             let hasDisliked = false;
             let obj = null;
-            let val;
+            let val; // can remove? 
 
             obj = await getPageLikes();
             totLikes = parseInt(obj.likes);
@@ -111,13 +111,15 @@ class ToolBarBottom extends HTMLElement {
             $(like).on('click', async function () {
 
                 $(like).find('i').toggleClass("red gray");
+                let key = $(like).data('key');
 
-                // get data attibute and post to likePage. can use this as they key to delete data. also maybe combine like and dislike in api
+                // get data attibute and post to likePage. can use this as they key to delete data.
 
                 port.postMessage({
                     type: "reaction",
-                    reactType: "like",
+                    reactType: "likes",
                     pageUrl: url,
+                    key: key,
                     date: getDate()
                 });
 
@@ -146,11 +148,13 @@ class ToolBarBottom extends HTMLElement {
             $(dislike).on('click', async function () {
 
                 $(dislike).find('i').toggleClass("blue gray");
+                let key = $(dislike).data('key');
 
                 port.postMessage({
                     type: "reaction",
-                    reactType: "dislike",
+                    reactType: "dislikes",
                     pageUrl: url,
+                    key: key,
                     date: getDate()
                 });
 

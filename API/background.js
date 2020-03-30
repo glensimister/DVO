@@ -10,7 +10,7 @@ user.recall({
 chrome.runtime.onConnectExternal.addListener(function (port) {
     port.onMessage.addListener(async function (request) {
 
-        if (request.type == "isUserLoggedIn") {
+        if (request.type === "isUserLoggedIn") {
             if (user.is) {
                 port.postMessage({
                     type: "loggedIn",
@@ -26,7 +26,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "getComments") {
+        else if (request.type === "getComments") {
             (async function () {
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let comments = await getComments();
@@ -51,7 +51,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let obj = {};
                     return new Promise(resolve => {
                         page.get('comments').map().once(function (data, key) {
-                            if (data) {
+                            if (data) { // What is this checking? 
                                 if (keys.includes(key)) {
                                     console.log("duplicate data. skipping...");
                                 } else {
@@ -74,7 +74,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             })();
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "addComment") {
+        else if (request.type === "addComment") {
             if (window.confirm(`This application wants to add a comment`)) {
                 let photo = await getProfilePicture();
                 let name = await getName();
@@ -88,7 +88,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "getProfilePicture") { //is this still being used? 
+        else if (request.type === "getProfilePicture") { //is this still being used? 
             let photo = await getProfilePicture();
             port.postMessage({
                 type: "photo",
@@ -97,95 +97,87 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             return true;
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
-        else if (request.type == "deleteComment") {
+        else if (request.type === "deleteComment") {
             user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).put(null);
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
-        else if (request.type == "updateComment") {
+        else if (request.type === "updateComment") {
             user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('comment').put(request.update);
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
-        else if (request.type == "reaction") {
+        else if (request.type === "reaction") {
             (async function () {
 
-                let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
-                let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
+                console.log("USER HAS REACTED!");
+
+                let likesGraphIsEmpty = await isEmpty(request.pageUrl, 'likes');
+                let dislikesGraphIsEmpty = await isEmpty(request.pageUrl, 'dislikes');
+
+                let hasLiked = false;
+                let hasDisliked = false;
+                let hasLikedKey = null;
+                let hasDislikedKey = null;
+                let likes = 0;
+                let dislikes = 0;
+
+                if (!likesGraphIsEmpty) {
+                    let liked = await reactedAlready(request.pageUrl, 'likes');
+                    hasLiked = liked.reacted;
+                    hasLikedKey = liked.key;
+                    console.log("Has the user liked this page already? " + hasLiked);
+                }
+
+                if (!dislikesGraphIsEmpty) {
+                    let disliked = await reactedAlready(request.pageUrl, 'dislikes');
+                    hasDisliked = disliked.reacted;
+                    hasDislikedKey = disliked.key;
+                    console.log("Has the user disliked this page already? " + hasDisliked);
+                }
+
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let id = user.is.pub;
 
-                //hasLiked and hasDisliked are arrays, e.g. 
-                //hasLiked[0] : true or false
-                //hasLiked[1] : the key of the object
 
-                if (request.reactType === 'like') {
-                    if (hasLiked[0]) {
-                        console.log("deleting: " + hasLiked[1]);
-                        page.get('likes').get(hasLiked[1]).put(null);
+                if (request.reactType === 'likes') {
+                    if (hasLiked) {
+                        console.log("Deleting: " + hasLikedKey);
+                        page.get(request.reactType).get(hasLikedKey).get('userId').put(null);
                     } else {
-                        page.get('likes').set({
+                        console.log("Liking...");
+                        page.get(request.reactType).set({
                             userId: id
                         });
                     }
-                    if (hasDisliked[0]) {
-                        console.log("deleting: " + hasDisliked[1]);
-                        page.get('likes').get(hasDisliked[1]).put(null);
+                    if (hasDisliked) {
+                        console.log("Deleting: " + hasDislikedKey);
+                        page.get(request.reactType).get(hasDislikedKey).get('userId').put(null);
                     }
                 }
 
-                if (request.reactType === 'dislike') {
-                    if (hasDisliked[0]) {
-                        console.log("deleting: " + hasDisliked[1]);
-                        page.get('likes').get(hasDisliked[1]).put(null);
+                if (request.reactType === 'dislikes') {
+                    if (hasDisliked) {
+                        console.log("Deleting: " + hasDislikedKey);
+                        page.get(request.reactType).get(hasDislikedKey).get('userId').put(null);
                     } else {
-                        page.get('dislikes').set({
+                        console.log("Disliking...");
+                        page.get(request.reactType).set({
                             userId: id
                         });
                     }
-                    if (hasLiked[0]) {
-                        console.log("deleting: " + hasLiked[1]);
-                        page.get('likes').get(hasLiked[1]).put(null);
+                    if (hasLiked) {
+                        console.log("Deleting: " + hasLikedKey);
+                        page.get(request.reactType).get(hasLikedKey).get('userId').put(null);
                     }
                 }
 
-                let numLikes = await getLikes(request.pageUrl, 'likes');
-                let numDislikes = await getLikes(request.pageUrl, 'dislikes');
-                let score = calculatePageScore(numLikes, numDislikes);
-
-                port.postMessage({
-                    type: "pageLikes",
-                    likes: numLikes,
-                    pageScore: score,
-                    dislikes: numDislikes,
-                    hasLiked: hasLiked[0],
-                    hasDisliked: hasDisliked[0]
-                });
-
+                console.log("Refreshing scores...");
+                getNumPageLikes(request.pageUrl);
+                return true;
             })();
-            return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////  
-        else if (request.type == "getNumPageLikes") {
-
-            (async function () {
-
-                let numLikes = await getLikes(request.pageUrl, 'likes');
-                console.log("numLikes:  " + numLikes);
-                let numDislikes = await getLikes(request.pageUrl, 'dislikes');
-                let hasLiked = await hasLikedBefore(request.pageUrl, 'likes');
-                let hasDisliked = await hasLikedBefore(request.pageUrl, 'dislikes');
-                let score = calculatePageScore(numLikes, numDislikes);
-                console.log(score);
-
-                port.postMessage({
-                    type: "pageLikes",
-                    likes: numLikes,
-                    dislikes: numDislikes,
-                    pageScore: score,
-                    hasLiked: hasLiked[0],
-                    hasDisliked: hasDisliked[0]
-                });
-            })();
-
+        else if (request.type === "getNumPageLikes") {
+            getNumPageLikes(request.pageUrl);
             return true;
         }
     });
@@ -193,20 +185,57 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
     /********** Helper functions **********/
 
-    /*async function getLikes(pageUrl, type) {
-        return new Promise(resolve => {
-            user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
-                console.log(data);
-                if (data === null || data === undefined) {
-                    resolve(0);
-                } else {
-                    let len = Object.keys(data).length - 1;
-                    console.log("Length: " + len);
-                    resolve(len);
-                }
-            });
+    async function getNumPageLikes(pageUrl) {
+
+        let likesGraphIsEmpty = await isEmpty(pageUrl, 'likes');
+        let dislikesGraphIsEmpty = await isEmpty(pageUrl, 'dislikes');
+        let likes = 0;
+        let dislikes = 0;
+        let hasLiked = false;
+        let hasDisliked = false;
+
+        if (!likesGraphIsEmpty) {
+            likes = await countLikes(pageUrl, 'likes');
+            hasLiked = await reactedAlready(pageUrl, 'likes');
+            hasLiked = hasLiked.reacted;
+        }
+
+        if (!dislikesGraphIsEmpty) {
+            dislikes = await countLikes(pageUrl, 'dislikes');
+            hasDisliked = await reactedAlready(pageUrl, 'dislikes');
+            hasDisliked = hasDisliked.reacted;
+        }
+
+        console.log("Likes: " + likes);
+        console.log("Dislikes: " + dislikes);
+        console.log("********************************************************");
+
+        let score = calculatePageScore(likes, dislikes);
+
+        port.postMessage({
+            type: "pageLikes",
+            likes: likes,
+            dislikes: dislikes,
+            pageScore: score,
+            hasLiked: hasLiked,
+            hasDisliked: hasDisliked
         });
-    }*/
+
+    }
+
+    async function isEmpty(pageUrl, type) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
+                    if (data === undefined || data === null) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                });
+            }, 100);
+        });
+    }
 
     function calculatePageScore(numLikes, numDislikes) {
         let score = numLikes + numDislikes;
@@ -219,46 +248,47 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
     }
 
-    async function getLikes(pageUrl, type) {
+    async function countLikes(pageUrl, type) {
+        let array = [];
         let count = 0;
         return new Promise(resolve => {
-            const record = user.get('pageReviews').get(pageUrl).get(type);
-            record.once(function (data) {
-                if (data === undefined || data === null) {
-                    resolve(0);
-                } else {
-                    record.map().once(function (data) {
-                        if (data === null) {
-                            count--;
-                        }
+            setTimeout(() => {
+                user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
+                    if (res.userId === null) {
+                        console.log(`Found a ${res.userId} object. Skipping...`);
+                    } else if (array.includes(key)) {
+                        console.log("Found a duplicate object. Skipping...");
+                    } else {
+                        console.log("Found userID: " + res.userId);
+                        array.push(key);
                         count++;
-                        console.log(count);
-                        resolve(count);
-                    });
-                }
-            });
+                    }
+                    resolve(count);
+                });
+            }, 100);
         });
     }
 
-    async function hasLikedBefore(pageUrl, type) {
-        let id = user.is.pub;
+    async function reactedAlready(pageUrl, type) {
+        let array = [];
+        let obj = {
+            reacted: false,
+            key: null
+        }
         return new Promise(resolve => {
-            const record = user.get('pageReviews').get(pageUrl).get(type);
-            record.once(function (data) {
-                if (data === undefined || data === null) {
-                    resolve([false, undefined]);
-                } else {
-                    record.map().once(function (data, key) {
-                        if (data !== null) {
-                            if (data.userId === id) {
-                                resolve([true, key]);
+            setTimeout(() => {
+                user.get('pageReviews').get(pageUrl).get(type).map().once(function (data, key) {
+                    if (data !== null) {
+                        if (data.userId === user.is.pub) {
+                            obj = {
+                                reacted: true,
+                                key: key
                             }
-                        } else {
-                            resolve([false, undefined]);
                         }
-                    });
-                }
-            });
+                    }
+                    resolve(obj);
+                });
+            }, 100);
         });
     }
 
