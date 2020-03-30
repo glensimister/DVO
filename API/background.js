@@ -147,7 +147,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     }
                     if (hasDisliked) {
                         console.log("Deleting: " + hasDislikedKey);
-                        page.get(request.reactType).get(hasDislikedKey).get('userId').put(null);
+                        page.get('dislikes').get(hasDislikedKey).get('userId').put(null);
                     }
                 }
 
@@ -163,7 +163,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     }
                     if (hasLiked) {
                         console.log("Deleting: " + hasLikedKey);
-                        page.get(request.reactType).get(hasLikedKey).get('userId').put(null);
+                        page.get('likes').get(hasLikedKey).get('userId').put(null);
                     }
                 }
 
@@ -219,14 +219,12 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
         if (!likesGraphIsEmpty) {
             likes = await countLikes(pageUrl, 'likes');
-            console.log("Likes: " + likes);
             hasLiked = await reactedAlready(pageUrl, 'likes');
             hasLiked = hasLiked.reacted;
         }
 
         if (!dislikesGraphIsEmpty) {
             dislikes = await countLikes(pageUrl, 'dislikes');
-            console.log("Dislikes: " + dislikes);
             hasDisliked = await reactedAlready(pageUrl, 'dislikes');
             hasDisliked = hasDisliked.reacted;
         }
