@@ -180,10 +180,28 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             getNumPageLikes(request.pageUrl);
             return true;
         }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (request.type === "getAll") {
+            getAll(request.pageUrl, request.reactType);
+            return true;
+        }
     });
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
     /********** Helper functions **********/
+
+    function getAll(pageUrl, type) {
+        user.get('pageReviews').get(pageUrl).get(type).map().on(function (data, key) {
+            if (data !== undefined) {
+                port.postMessage({
+                    type: type,
+                    key: key,
+                    userId: data.userId
+                });
+            }
+        });
+    }
 
     async function getNumPageLikes(pageUrl) {
 
@@ -270,7 +288,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     }
 
     async function reactedAlready(pageUrl, type) {
-        let array = [];
         let obj = {
             reacted: false,
             key: null
