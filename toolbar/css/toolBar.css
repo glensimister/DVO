@@ -205,6 +205,11 @@ dialog {
     border-radius: 4px;
     margin-top: 20px;
 }
+
+#dialogFooter a {
+    color:#fff;
+}
+
 #dialogFooter span {
     padding: 0 5px;
     border-right: 1px solid #eee;
