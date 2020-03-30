@@ -31,7 +31,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let comments = await getComments();
 
-                // why do i need setTimeout? Without this the full array won't load
+                // why do i need setTimeout? should put this inside the function
                 setTimeout(function () {
                     let json = JSON.stringify(comments);
                     let len = comments.length;
@@ -147,6 +147,11 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                         page.get(request.reactType).set({
                             userId: id
                         });
+                        /*
+                        This is firing multiple times even if only one object was set
+                        page.get(request.reactType).map().once(function (data, key) {
+                            console.log("data has been added with key: " + key);
+                        });*/
                     }
                     if (hasDisliked) {
                         console.log("Deleting: " + hasDislikedKey);
@@ -192,13 +197,21 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     /********** Helper functions **********/
 
     function getAll(pageUrl, type) {
+        let array = [];
         user.get('pageReviews').get(pageUrl).get(type).map().on(function (data, key) {
             if (data !== undefined) {
-                port.postMessage({
-                    type: type,
-                    key: key,
-                    userId: data.userId
-                });
+                if (data.userId === null) {
+                    console.log(`Found a ${data.userId} object. Skipping...`);
+                } else if (array.includes(key)) {
+                    console.log("Found a duplicate object. Skipping...");
+                } else {
+                    array.push(key);
+                    port.postMessage({
+                        type: type,
+                        key: key,
+                        userId: data.userId
+                    });
+                }
             }
         });
     }
@@ -214,12 +227,14 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
         if (!likesGraphIsEmpty) {
             likes = await countLikes(pageUrl, 'likes');
+            console.log("Likes: " + likes);
             hasLiked = await reactedAlready(pageUrl, 'likes');
             hasLiked = hasLiked.reacted;
         }
 
         if (!dislikesGraphIsEmpty) {
             dislikes = await countLikes(pageUrl, 'dislikes');
+            console.log("Dislikes: " + dislikes);
             hasDisliked = await reactedAlready(pageUrl, 'dislikes');
             hasDisliked = hasDisliked.reacted;
         }
@@ -229,7 +244,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         console.log("********************************************************");
 
         let score = calculatePageScore(likes, dislikes);
-
         port.postMessage({
             type: "pageLikes",
             likes: likes,
@@ -238,7 +252,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             hasLiked: hasLiked,
             hasDisliked: hasDisliked
         });
-
     }
 
     async function isEmpty(pageUrl, type) {
@@ -266,12 +279,37 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
     }
 
+    /* There are two problems with this. The first is that when the data is being set, it seems to add multiple copied of the data. The second is that the array.includes(key) isn't detecting the duplicates */
+
     async function countLikes(pageUrl, type) {
+        let array = [];
+        let userIdArray = [];
+        let count = 0;
+
+        await user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
+            if (res.userId === null) {
+                console.log(`Found a ${res.userId} object. Skipping...`);
+            } else if (array.includes(key)) {
+                console.log("Found a duplicate object. Skipping...");
+            } else if (userIdArray.includes(res.userId)) {
+                console.log("Object has the same userID. Skipping...");
+            } else {
+                console.log("Found userID: " + res.userId);
+                array.push(key);
+                userIdArray.push(res.userId);
+                count++;
+                console.log("Reaction count: " + count);
+            }
+        });
+        return count;
+    }
+
+    /*async function countLikes(pageUrl, type) {
         let array = [];
         let count = 0;
         return new Promise(resolve => {
-            setTimeout(() => {
-                user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
+            setTimeout(async() => {
+                await user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
                     if (res.userId === null) {
                         console.log(`Found a ${res.userId} object. Skipping...`);
                     } else if (array.includes(key)) {
@@ -280,14 +318,33 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                         console.log("Found userID: " + res.userId);
                         array.push(key);
                         count++;
+                        console.log("Reaction count: " + count);
                     }
-                    resolve(count);
                 });
+                resolve(count);
             }, 100);
         });
-    }
+    }*/
 
     async function reactedAlready(pageUrl, type) {
+        let obj = {
+            reacted: false,
+            key: null
+        }
+        await user.get('pageReviews').get(pageUrl).get(type).map().once(function (data, key) {
+            if (data !== null) {
+                if (data.userId === user.is.pub) {
+                    obj = {
+                        reacted: true,
+                        key: key
+                    }
+                }
+            }
+        });
+        return obj;
+    }
+
+    /*async function reactedAlready(pageUrl, type) {
         let obj = {
             reacted: false,
             key: null
@@ -307,7 +364,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 });
             }, 100);
         });
-    }
+    }*/
 
     async function getProfilePicture(pageUrl) {
         return new Promise(resolve => {
