@@ -10,7 +10,7 @@
     display: grid;
     grid-gap: 2px;
     grid-auto-flow: column;
-    padding: 4px;
+    padding: 4px 0;
     font-size: 12px;
     font-family: sans-serif;
 }
@@ -20,13 +20,13 @@
 .toolbar-bottom {
     position: fixed;
     width: 240px;
-    left: 50%;
-    margin-left: -120px;
+    left: 5px;
+    /* margin-left: -120px; */
     bottom: 0;
     z-index: 100000;
     margin-bottom: -29px;
     border-top-right-radius: 5px;
-    border-top-left-radius: 5px;
+    /* border-top-left-radius: 5px; */
 }
 .toolbar-bottom img,
 .toolbar-comments img {
@@ -45,9 +45,9 @@
     font-size: 12px;
     z-index: 100001;
     bottom: 0px;
-    left: 50%;
+    left: 5px;
     width: 40px;
-    margin-left: -20.5px;
+    /* margin-left: -20.5px; */
     text-align: center;
     cursor: pointer;
     color: #fff;
