@@ -30,45 +30,37 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             (async function () {
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let comments = await getComments();
+                let json = JSON.stringify(comments);
+                let len = comments.length;
+                
+                port.postMessage({
+                    type: "pageComments",
+                    comments: json,
+                    count: len
+                });
 
-                // why do i need setTimeout? should put this inside the function
-                setTimeout(function () {
-                    let json = JSON.stringify(comments);
-                    let len = comments.length;
-                    console.log(len);
-                    console.log("JSON: " + json);
-                    port.postMessage({
-                        type: "pageComments",
-                        comments: json,
-                        count: len
-                    });
-                }, 100);
-
-                // get comments and filter out any duplicates
                 async function getComments() {
                     let array = [];
                     let keys = [];
                     let obj = {};
-                    return new Promise(resolve => {
-                        page.get('comments').map().once(function (data, key) {
-                            if (data) { // What is this checking? 
-                                if (keys.includes(key)) {
-                                    console.log("duplicate data. skipping...");
-                                } else {
-                                    obj = {
-                                        key: key,
-                                        comment: data.comment,
-                                        date: data.date,
-                                        photo: data.photo,
-                                        name: data.name
-                                    }
-                                    keys.push(key);
-                                    array.push(obj);
-                                    resolve(array);
+                    await page.get('comments').map().once(function (data, key) {
+                        if (data) { // What is this checking? 
+                            if (keys.includes(key)) {
+                                console.log("duplicate data. skipping...");
+                            } else {
+                                obj = {
+                                    key: key,
+                                    comment: data.comment,
+                                    date: data.date,
+                                    photo: data.photo,
+                                    name: data.name
                                 }
+                                keys.push(key);
+                                array.push(obj);
                             }
-                        });
+                        }
                     });
+                    return array;
                 }
                 return true;
             })();
