@@ -22,7 +22,9 @@ function isUserLoggedIn() {
 }
 
 $('.register').click(function () {
-    let profileName = $('.profile-name').val()
+    //let profileName = $('.profile-name').val()
+    let profileName = "Guest User";
+
     port.postMessage({
         type: "register",
         username: $('.username').val(),
@@ -38,6 +40,7 @@ $('.register').click(function () {
             $('#form').css('display', 'none');
             $('#confirmation').show();
             $('#confirmation .name').html(profileName);
+            $('.profile-photo').attr("src", res.photo);
         }
     });
 });
@@ -56,16 +59,14 @@ $('.login').click(function () {
     });
 });
 
-$('.logout').click(function () {
+$('.logout').on('click', function () {
     port.postMessage({
         type: "logout"
     });
-    port.onMessage.addListener(function (res) {
-        if (res.response == "loggedOut") {
-            $('.logout').css('display', 'none');
-            $('#form').css('display', 'block');
-        }
-    });
+    $('#confirmation').hide();
+    $('.logout').css('display', 'none');
+    $('#form').css('display', 'block');
+    $('#login').show();
 });
 
 /*$('.clear').on("click", function () {

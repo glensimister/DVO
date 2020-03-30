@@ -366,7 +366,8 @@ chrome.runtime.onConnect.addListener(function (port) {
             user.create(request.username, request.password, function () {
                 user.auth(request.username, request.password, function () {
                     port.postMessage({
-                        response: true
+                        response: true,
+                        photo: "/images/profilepic.jpg"
                     });
                     user.get('profile').get('name').put(request.name);
                     let profilePicUrl = "https://glensimister.files.wordpress.com/2014/12/profilepic.jpg?w=660";

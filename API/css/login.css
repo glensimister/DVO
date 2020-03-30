@@ -25,7 +25,7 @@ a {
 }
 #login,
 #register {
-    padding: 10px 20px 40px 20px;
+    padding: 10px 30px 40px 30px;
     text-align: center;
     font-family: sans-serif;
     background: #1c2529;
@@ -58,4 +58,15 @@ a {
     -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
     transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
     box-sizing: border-box;
+}
+.profile-photo {
+   width: 100px;
+    height: 100px;
+    display: block;
+    margin: 20px auto;
+    border: 5px solid #848484;
+    border-radius: 50%; 
+}
+.name {
+    font-weight: bold;
 }
