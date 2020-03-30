@@ -255,17 +255,15 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     }
 
     async function isEmpty(pageUrl, type) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
-                    if (data === undefined || data === null) {
-                        resolve(true);
-                    } else {
-                        resolve(false);
-                    }
-                });
-            }, 100);
+        let isEmpty;
+        await user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
+            if (data === undefined) {
+                isEmpty = true;
+            } else {
+                isEmpty = false;
+            }
         });
+        return isEmpty;
     }
 
     function calculatePageScore(numLikes, numDislikes) {
@@ -278,8 +276,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             return score;
         }
     }
-
-    /* There are two problems with this. The first is that when the data is being set, it seems to add multiple copied of the data. The second is that the array.includes(key) isn't detecting the duplicates */
 
     async function countLikes(pageUrl, type) {
         let array = [];
@@ -294,37 +290,13 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             } else if (userIdArray.includes(res.userId)) {
                 console.log("Object has the same userID. Skipping...");
             } else {
-                console.log("Found userID: " + res.userId);
                 array.push(key);
                 userIdArray.push(res.userId);
                 count++;
-                console.log("Reaction count: " + count);
             }
         });
         return count;
     }
-
-    /*async function countLikes(pageUrl, type) {
-        let array = [];
-        let count = 0;
-        return new Promise(resolve => {
-            setTimeout(async() => {
-                await user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
-                    if (res.userId === null) {
-                        console.log(`Found a ${res.userId} object. Skipping...`);
-                    } else if (array.includes(key)) {
-                        console.log("Found a duplicate object. Skipping...");
-                    } else {
-                        console.log("Found userID: " + res.userId);
-                        array.push(key);
-                        count++;
-                        console.log("Reaction count: " + count);
-                    }
-                });
-                resolve(count);
-            }, 100);
-        });
-    }*/
 
     async function reactedAlready(pageUrl, type) {
         let obj = {
@@ -343,28 +315,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         });
         return obj;
     }
-
-    /*async function reactedAlready(pageUrl, type) {
-        let obj = {
-            reacted: false,
-            key: null
-        }
-        return new Promise(resolve => {
-            setTimeout(() => {
-                user.get('pageReviews').get(pageUrl).get(type).map().once(function (data, key) {
-                    if (data !== null) {
-                        if (data.userId === user.is.pub) {
-                            obj = {
-                                reacted: true,
-                                key: key
-                            }
-                        }
-                    }
-                    resolve(obj);
-                });
-            }, 100);
-        });
-    }*/
 
     async function getProfilePicture(pageUrl) {
         return new Promise(resolve => {
@@ -401,22 +351,6 @@ function onClickHandler(info, tab) {
     //if (window.confirm(`Are you sure you want to post ${info.srcUrl} to your DVO newsfeed?`)) {}
     user.get('profile').get('photo').put(info.srcUrl);
 }
-
-/*
-Gun.on('opt', function (ctx) {
-    if (ctx.once) {
-        return
-    }
-    ctx.on('in', function (msg) {
-        var to = this.to;
-        let str = JSON.stringify(msg, null, ' ');
-        if (str.length < 200) {
-            console.log('This record is valid' + str);
-        } else {
-            to.next(msg);
-        }
-    });
-});*/
 
 /***** Internal API for login and registration *****/
 
@@ -464,3 +398,79 @@ chrome.runtime.onConnect.addListener(function (port) {
         }
     });
 });
+
+/****************************** old/unused functions **************************************/
+
+/*
+Gun.on('opt', function (ctx) {
+    if (ctx.once) {
+        return
+    }
+    ctx.on('in', function (msg) {
+        var to = this.to;
+        let str = JSON.stringify(msg, null, ' ');
+        if (str.length < 200) {
+            console.log('This record is valid' + str);
+        } else {
+            to.next(msg);
+        }
+    });
+});*/
+
+/*async function isEmpty(pageUrl, type) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
+                if (data === undefined || data === null) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            });
+        }, 100);
+    });
+}*/
+
+/*async function countLikes(pageUrl, type) {
+    let array = [];
+    let count = 0;
+    return new Promise(resolve => {
+        setTimeout(async() => {
+            await user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
+                if (res.userId === null) {
+                    console.log(`Found a ${res.userId} object. Skipping...`);
+                } else if (array.includes(key)) {
+                    console.log("Found a duplicate object. Skipping...");
+                } else {
+                    console.log("Found userID: " + res.userId);
+                    array.push(key);
+                    count++;
+                    console.log("Reaction count: " + count);
+                }
+            });
+            resolve(count);
+        }, 100);
+    });
+}*/
+
+/*async function reactedAlready(pageUrl, type) {
+    let obj = {
+        reacted: false,
+        key: null
+    }
+    return new Promise(resolve => {
+        setTimeout(() => {
+            user.get('pageReviews').get(pageUrl).get(type).map().once(function (data, key) {
+                if (data !== null) {
+                    if (data.userId === user.is.pub) {
+                        obj = {
+                            reacted: true,
+                            key: key
+                        }
+                    }
+                }
+                resolve(obj);
+            });
+        }, 100);
+    });
+}*/
