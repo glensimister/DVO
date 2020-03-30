@@ -113,7 +113,8 @@ class ToolBarBottom extends HTMLElement {
                 $(like).find('i').toggleClass("red gray");
                 let key = $(like).data('key');
 
-                // get data attibute and post to likePage. can use this as they key to delete data.
+                // i'm not sure what to do with the title (document.title) yet. 
+                // I need to get the title and description of the page. maybe it would be better to pull this from google on the fly
 
                 port.postMessage({
                     type: "reaction",
@@ -144,6 +145,7 @@ class ToolBarBottom extends HTMLElement {
                     }
                 });
             });
+
 
             $(dislike).on('click', async function () {
 

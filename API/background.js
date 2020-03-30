@@ -352,7 +352,8 @@ chrome.runtime.onConnect.addListener(function (port) {
             if (user.is) {
                 port.postMessage({
                     type: "loggedIn",
-                    response: true
+                    response: true,
+                    photo: "/images/profilepic.jpg"
                 });
             } else {
                 port.postMessage({

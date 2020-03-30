@@ -17,6 +17,8 @@ function isUserLoggedIn() {
         if (res.type == "loggedIn" && res.response) {
             $('.logout').css('display', 'block');
             $('#form').css('display', 'none');
+            $('.profile-photo').show();
+            $('.profile-photo').attr("src", res.photo);
         }
     });
 }
@@ -40,6 +42,7 @@ $('.register').click(function () {
             $('#form').css('display', 'none');
             $('#confirmation').show();
             $('#confirmation .name').html(profileName);
+            $('.profile-photo').show();
             $('.profile-photo').attr("src", res.photo);
         }
     });
@@ -67,6 +70,7 @@ $('.logout').on('click', function () {
     $('.logout').css('display', 'none');
     $('#form').css('display', 'block');
     $('#login').show();
+    $('.profile-photo').hide();
 });
 
 /*$('.clear').on("click", function () {
