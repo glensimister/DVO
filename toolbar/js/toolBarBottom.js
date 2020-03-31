@@ -111,6 +111,8 @@ class ToolBarBottom extends HTMLElement {
             $(like).on('click', async function () {
 
                 $(like).find('i').toggleClass("red gray");
+                $(dislike).find('i').removeClass("gray");
+                $(dislike).find('i').addClass("blue");
                 let key = $(like).data('key');
 
                 // i'm not sure what to do with the title (document.title) yet. 
@@ -133,9 +135,9 @@ class ToolBarBottom extends HTMLElement {
                         $(likes).html(res.likes);
                         $(scoreDiv).html(res.pageScore);
 
-                        if (res.hasDisliked) {
+                        /*if (res.hasDisliked) {
                             $(dislike).find('i').toggleClass("gray blue");
-                        }
+                        }*/
 
                         if (!res.hasLiked) {
                             console.log("page has not already been liked");
@@ -150,6 +152,9 @@ class ToolBarBottom extends HTMLElement {
             $(dislike).on('click', async function () {
 
                 $(dislike).find('i').toggleClass("blue gray");
+                $(like).find('i').removeClass("gray");
+                $(like).find('i').addClass("red");
+
                 let key = $(dislike).data('key');
 
                 port.postMessage({
@@ -169,9 +174,9 @@ class ToolBarBottom extends HTMLElement {
                         $(likes).html(res.likes);
                         $(scoreDiv).html(res.pageScore);
 
-                        if (res.hasLiked) {
+                        /*if (res.hasLiked) {
                             $(like).find('i').toggleClass("gray red");
-                        }
+                        }*/
 
                         if (!res.hasDisliked) {
                             console.log("page has not already been disliked");
