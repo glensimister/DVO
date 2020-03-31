@@ -32,7 +32,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let comments = await getComments();
                 let json = JSON.stringify(comments);
                 let len = comments.length;
-                
+
                 port.postMessage({
                     type: "pageComments",
                     comments: json,
@@ -67,7 +67,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "addComment") {
-            if (window.confirm(`This application wants to add a comment`)) {
+            if (window.confirm(`Confirm add comment`)) {
                 let photo = await getProfilePicture();
                 let name = await getName();
                 user.get('pageReviews').get(request.pageUrl).get('comments').set({
@@ -90,11 +90,15 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "deleteComment") {
-            user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).put(null);
+            if (window.confirm(`Confirm delete comment`)) {
+                user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).put(null);
+            }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "updateComment") {
-            user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('comment').put(request.update);
+            if (window.confirm(`Confirm edit comment`)) {
+                user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('comment').put(request.update);
+            }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "reaction") {
@@ -102,9 +106,10 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                 console.log("USER HAS REACTED!");
 
-                let likesGraphIsEmpty = await isEmpty(request.pageUrl, 'likes');
-                let dislikesGraphIsEmpty = await isEmpty(request.pageUrl, 'dislikes');
-
+                let likesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'likes');
+                let dislikesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'dislikes');
+                let page = user.get(request.table).get(request.pageUrl);
+                let id = user.is.pub;
                 let hasLiked = false;
                 let hasDisliked = false;
                 let hasLikedKey = null;
@@ -113,21 +118,18 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let dislikes = 0;
 
                 if (!likesGraphIsEmpty) {
-                    let liked = await reactedAlready(request.pageUrl, 'likes');
+                    let liked = await reactedAlready(request.table, request.pageUrl, 'likes');
                     hasLiked = liked.reacted;
                     hasLikedKey = liked.key;
                     console.log("Has the user liked this page already? " + hasLiked);
                 }
 
                 if (!dislikesGraphIsEmpty) {
-                    let disliked = await reactedAlready(request.pageUrl, 'dislikes');
+                    let disliked = await reactedAlready(request.table, request.pageUrl, 'dislikes');
                     hasDisliked = disliked.reacted;
                     hasDislikedKey = disliked.key;
                     console.log("Has the user disliked this page already? " + hasDisliked);
                 }
-
-                let page = user.get('pageReviews').get(request.pageUrl);
-                let id = user.is.pub;
 
 
                 if (request.reactType === 'likes') {
@@ -168,13 +170,13 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 }
 
                 console.log("Refreshing scores...");
-                getNumPageLikes(request.pageUrl);
+                getNumPageLikes(request.table, request.pageUrl);
                 return true;
             })();
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////  
         else if (request.type === "getNumPageLikes") {
-            getNumPageLikes(request.pageUrl);
+            getNumPageLikes(request.table, request.pageUrl);
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,24 +210,24 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         });
     }
 
-    async function getNumPageLikes(pageUrl) {
+    async function getNumPageLikes(table, pageUrl) {
 
-        let likesGraphIsEmpty = await isEmpty(pageUrl, 'likes');
-        let dislikesGraphIsEmpty = await isEmpty(pageUrl, 'dislikes');
+        let likesGraphIsEmpty = await isEmpty(table, pageUrl, 'likes');
+        let dislikesGraphIsEmpty = await isEmpty(table, pageUrl, 'dislikes');
         let likes = 0;
         let dislikes = 0;
         let hasLiked = false;
         let hasDisliked = false;
 
         if (!likesGraphIsEmpty) {
-            likes = await countLikes(pageUrl, 'likes');
-            hasLiked = await reactedAlready(pageUrl, 'likes');
+            likes = await countLikes(table, pageUrl, 'likes');
+            hasLiked = await reactedAlready(table, pageUrl, 'likes');
             hasLiked = hasLiked.reacted;
         }
 
         if (!dislikesGraphIsEmpty) {
-            dislikes = await countLikes(pageUrl, 'dislikes');
-            hasDisliked = await reactedAlready(pageUrl, 'dislikes');
+            dislikes = await countLikes(table, pageUrl, 'dislikes');
+            hasDisliked = await reactedAlready(table, pageUrl, 'dislikes');
             hasDisliked = hasDisliked.reacted;
         }
 
@@ -235,7 +237,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
         let score = calculatePageScore(likes, dislikes);
         port.postMessage({
-            type: "pageLikes",
+            type: table,
             likes: likes,
             dislikes: dislikes,
             pageScore: score,
@@ -244,9 +246,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         });
     }
 
-    async function isEmpty(pageUrl, type) {
+    async function isEmpty(table, pageUrl, type) {
         let isEmpty;
-        await user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
+        await user.get(table).get(pageUrl).get(type).once(function (data) {
             if (data === undefined) {
                 isEmpty = true;
             } else {
@@ -267,12 +269,12 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
     }
 
-    async function countLikes(pageUrl, type) {
+    async function countLikes(table, pageUrl, type) {
         let array = [];
         let userIdArray = [];
         let count = 0;
 
-        await user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
+        await user.get(table).get(pageUrl).get(type).map().once(function (res, key) {
             if (res.userId === null) {
                 console.log(`Found a ${res.userId} object. Skipping...`);
             } else if (array.includes(key)) {
@@ -288,12 +290,12 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         return count;
     }
 
-    async function reactedAlready(pageUrl, type) {
+    async function reactedAlready(table, pageUrl, type) {
         let obj = {
             reacted: false,
             key: null
         }
-        await user.get('pageReviews').get(pageUrl).get(type).map().once(function (data, key) {
+        await user.get(table).get(pageUrl).get(type).map().once(function (data, key) {
             if (data !== null) {
                 if (data.userId === user.is.pub) {
                     obj = {
@@ -332,6 +334,36 @@ chrome.runtime.onInstalled.addListener(function () {
         "title": title,
         "contexts": [context],
         "id": "context" + context
+    });
+});
+
+chrome.runtime.onInstalled.addListener(function () {
+    var title = "Like Image";
+    var context = "image";
+    var id = chrome.contextMenus.create({
+        "title": title,
+        "contexts": [context],
+        "id": "context" + 2
+    });
+});
+
+chrome.runtime.onInstalled.addListener(function () {
+    var title = "Dislike Image";
+    var context = "image";
+    var id = chrome.contextMenus.create({
+        "title": title,
+        "contexts": [context],
+        "id": "context" + 3
+    });
+});
+
+chrome.runtime.onInstalled.addListener(function () {
+    var title = "Share Image";
+    var context = "image";
+    var id = chrome.contextMenus.create({
+        "title": title,
+        "contexts": [context],
+        "id": "context" + 4
     });
 });
 

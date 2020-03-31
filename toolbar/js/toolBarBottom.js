@@ -42,10 +42,11 @@ class ToolBarBottom extends HTMLElement {
                 return new Promise(resolve => {
                     port.postMessage({
                         type: "getNumPageLikes",
+                        table: 'pageReviews',
                         pageUrl: url
                     });
                     port.onMessage.addListener(function (res) {
-                        if (res.type === "pageLikes") {
+                        if (res.type === "pageReviews") {
                             resolve(res);
                         }
                     });
@@ -120,6 +121,7 @@ class ToolBarBottom extends HTMLElement {
 
                 port.postMessage({
                     type: "reaction",
+                    table: "pageReviews",
                     reactType: "likes",
                     pageUrl: url,
                     key: key,
@@ -129,7 +131,7 @@ class ToolBarBottom extends HTMLElement {
                 // if the page hasn't already been liked, toggle the class, else, do nothing
 
                 port.onMessage.addListener(function (res) {
-                    if (res.type === "pageLikes") {
+                    if (res.type === "pageReviews") {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
@@ -159,6 +161,7 @@ class ToolBarBottom extends HTMLElement {
 
                 port.postMessage({
                     type: "reaction",
+                    table: "pageReviews",
                     reactType: "dislikes",
                     pageUrl: url,
                     key: key,
@@ -168,7 +171,7 @@ class ToolBarBottom extends HTMLElement {
                 // if the page has already been liked, retract the like, else, toggle class
 
                 port.onMessage.addListener(function (res) {
-                    if (res.type === "pageLikes") {
+                    if (res.type === "pageReviews") {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
