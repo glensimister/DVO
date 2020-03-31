@@ -348,7 +348,7 @@ chrome.runtime.onConnect.addListener(function (port) {
     console.assert(port.name == "dvo"); // Do i need this? 
     port.onMessage.addListener(async function (request) {
 
-        if (request.type == "isUserLoggedIn") {
+        if (request.type === "isUserLoggedIn") {
             if (user.is) {
                 port.postMessage({
                     type: "loggedIn",
@@ -363,7 +363,7 @@ chrome.runtime.onConnect.addListener(function (port) {
             }
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "register") {
+        else if (request.type === "register") {
             user.create(request.username, request.password, function () {
                 user.auth(request.username, request.password, function () {
                     port.postMessage({
@@ -377,7 +377,7 @@ chrome.runtime.onConnect.addListener(function (port) {
             });
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "login") {
+        else if (request.type === "login") {
             user.auth(request.username, request.password, function () {
                 port.postMessage({
                     response: true
@@ -385,7 +385,7 @@ chrome.runtime.onConnect.addListener(function (port) {
             });
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (request.type == "logout") {
+        else if (request.type === "logout") {
             user.leave();
         }
     });
