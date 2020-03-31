@@ -7,6 +7,29 @@ var port = chrome.runtime.connect({
     name: "dvo"
 });
 
+/**** Generate vanity key 
+(async function () {
+
+    let pair = await SEA.pair();
+    let pubKey = pair.pub;
+    let x = 3;
+    let first = pubKey.substr(0, x);
+    let last = pubKey.substr(-x);
+    let count = 0;
+
+    while (first !== last) {
+        pair = await SEA.pair();
+        pubKey = pair.pub;
+        first = pubKey.substr(0, x);
+        last = pubKey.substr(-x);
+        count++;
+    }
+    console.log(first + " / " + last);
+    console.log("Generating: " + pubKey + " took " + count + " attempts");
+
+})();
+/****/
+
 isUserLoggedIn();
 
 function isUserLoggedIn() {
