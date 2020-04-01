@@ -48,18 +48,22 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let obj = {};
                     let likes = 0;
                     let dislikes = 0;
+                    let hasLiked = false;
+                    let hasDisliked = false;
 
-                    /***** this code need to be below but gun doesn't seem to like asyn functions ****/
+                    /***** this code need to be below but gun doesn't seem to like async functions ****/
                     if (!likesGraphIsEmpty) {
                         likes = await countLikes('commentReactions', request.pageUrl, 'likes');
-                        console.log(likes);
+                        //hasLiked = await reactedAlready('commentReactions', request.pageUrl, request.itemId, 'likes');
+                        //hasLiked = hasLiked.reactedAlready;
                     }
 
                     if (!dislikesGraphIsEmpty) {
                         dislikes = await countLikes('commentReactions', request.pageUrl, 'dislikes');
-                        console.log(dislikes);
+                        //hasDisliked = await reactedAlready('commentReactions', request.pageUrl, request.itemId, 'dislikes');
+                        //hasDisliked = hasDisliked.reactedAlready;
                     }
-                    
+
                     let score = calculatePageScore(likes, dislikes);
                     /************************************************************************************/
 
@@ -69,6 +73,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
                             } else {
+
                                 obj = {
                                     key: key,
                                     comment: data.comment,
@@ -77,6 +82,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                                     name: data.name,
                                     likes: likes,
                                     dislikes: dislikes,
+                                    hasLiked: hasLiked,
+                                    hasDisliked: hasDisliked,
                                     score: score
                                 }
                                 keys.push(key);

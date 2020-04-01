@@ -28,6 +28,22 @@ $(document).ready(async function () {
                 let json = JSON.parse(res.comments);
                 $("#dialogBody").html("");
                 json.forEach(function (item, index) {
+
+                    let likeClass;
+                    let dislikeClass;
+
+                    if (item.hasLiked) {
+                        likeClass = "gray";
+                    } else {
+                        likeClass = "red";
+                    }
+
+                    if (item.hasDisliked) {
+                        dislikeClass = "gray";
+                    } else {
+                        dislikeClass = "blue";
+                    }
+
                     let template = `<div id="${item.key}" class="post">
 <i class="edit-post fa fa-edit"></i>
 <i class="delete-post fa fa-close"></i>
@@ -39,9 +55,9 @@ $(document).ready(async function () {
 </div>
 </div>
 <div class="toolbar-comments">
-<div class="like"><i class="red fa fa-thumbs-up"></i></div>
+<div class="like"><i class="${likeClass} fa fa-thumbs-up"></i></div>
 <div class="like-count">${item.likes}</div>
-<div class="dislike"><i class="blue fa fa-thumbs-down"></i></div>
+<div class="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
 <div class="dislike-count">${item.dislikes}</div>
 <div class="score"><x-star-rating value="${item.score}" number="5"></x-star-rating></div>
 </div>
@@ -92,10 +108,12 @@ $(document).ready(async function () {
                 $(".like").on('click', function () {
                     let commentId = $(this).parent().parent().attr('id');
                     likeComment('likes', commentId);
+                    $(this).find('i').toggleClass("red gray");
                 });
                 $(".dislike").on('click', function () {
                     let commentId = $(this).parent().parent().attr('id');
                     likeComment('dislikes', commentId);
+                    $(this).find('i').toggleClass("blue gray");
                 });
 
                 function likeComment(reactType, id) {
