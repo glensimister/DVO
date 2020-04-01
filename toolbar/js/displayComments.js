@@ -39,9 +39,9 @@ $(document).ready(async function () {
 </div>
 </div>
 <div class="toolbar-comments">
-<div class="like"><i class="like-comment red fa fa-thumbs-up"></i></div>
+<div class="like"><i class="red fa fa-thumbs-up"></i></div>
 <div class="like-count">${item.likes}</div>
-<div class="dislike"><i class="dislike-comment blue fa fa-thumbs-down"></i></div>
+<div class="dislike"><i class="blue fa fa-thumbs-down"></i></div>
 <div class="dislike-count">${item.dislikes}</div>
 <div class="score"><x-star-rating value="${item.score}" number="5"></x-star-rating></div>
 </div>
@@ -89,25 +89,26 @@ $(document).ready(async function () {
                     $(this).toggleClass("fa-edit fa-save");
                 });
 
-                $(".like-comment").on('click', function () {
-                    likeComment('likes');
+                $(".like").on('click', function () {
+                    let commentId = $(this).parent().parent().attr('id');
+                    likeComment('likes', commentId);
                 });
-                $(".dislike-comment").on('click', function () {
-                    likeComment('dislikes');
+                $(".dislike").on('click', function () {
+                    let commentId = $(this).parent().parent().attr('id');
+                    likeComment('dislikes', commentId);
                 });
 
-                function likeComment(reactType) {
-                    let commentId = $(this).parent().attr('id');
+                function likeComment(reactType, id) {
                     port.postMessage({
                         type: "reaction",
-                        table: "comments",
+                        table: "commentReactions",
                         reactType: reactType,
                         pageUrl: url,
-                        itemId: Math.round(Math.random()*100000),
+                        itemId: id,
                         date: getDate()
                     });
                     port.onMessage.addListener(function (res) {
-                        if (res.type === "comments") {
+                        if (res.type === "commentReactions") {
                             $(".like-count").html(res.likes);
                             $(".dislike-count").html(res.dislikes);
 

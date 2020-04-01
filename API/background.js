@@ -28,6 +28,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getComments") {
             (async function () {
+
+                let likesGraphIsEmpty = await isEmpty('commentReactions', request.pageUrl, 'likes');
+                let dislikesGraphIsEmpty = await isEmpty('commentReactions', request.pageUrl, 'dislikes');
                 let page = user.get('pageReviews').get(request.pageUrl);
                 let comments = await getComments();
                 let json = JSON.stringify(comments);
@@ -43,22 +46,38 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let array = [];
                     let keys = [];
                     let obj = {};
+                    let likes = 0;
+                    let dislikes = 0;
+
+                    /***** this code need to be below but gun doesn't seem to like asyn functions ****/
+                    if (!likesGraphIsEmpty) {
+                        likes = await countLikes('commentReactions', request.pageUrl, 'likes');
+                        console.log(likes);
+                    }
+
+                    if (!dislikesGraphIsEmpty) {
+                        dislikes = await countLikes('commentReactions', request.pageUrl, 'dislikes');
+                        console.log(dislikes);
+                    }
+                    
+                    let score = calculatePageScore(likes, dislikes);
+                    /************************************************************************************/
+
                     await page.get('comments').map().once(async function (data, key) {
+
                         if (data) { // What is this checking? 
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
                             } else {
-                                let commentReactions = await getCommentReactions(key);
-                                console.log(commentReactions);
                                 obj = {
                                     key: key,
                                     comment: data.comment,
                                     date: data.date,
                                     photo: data.photo,
                                     name: data.name,
-                                    likes: commentReactions.likes,
-                                    dislikes: commentReactions.dislikes,
-                                    score: commentReactions.score
+                                    likes: likes,
+                                    dislikes: dislikes,
+                                    score: score
                                 }
                                 keys.push(key);
                                 array.push(obj);
@@ -67,17 +86,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     });
                     return array;
                 }
-
-                async function getCommentReactions(key) {
-                    let obj = {
-                        likes: 5,
-                        dislikes: 2,
-                        score: 3
-                    }
-                    return obj;
-                }
-
-
                 return true;
             })();
         }
@@ -90,7 +98,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     comment: request.comment,
                     date: request.date,
                     name: name,
-                    photo: photo
+                    photo: photo,
+                    userId: user.is.pub
                 });
             }
             return true;
@@ -120,7 +129,11 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         else if (request.type === "reaction") {
             (async function () {
                 console.log(`**********************************************************`);
-                console.log(`USER HAS REACTED! Type = ${request.reactType}`);
+                console.log(`USER HAS REACTED!`);
+                console.log(`Table : ${request.table}`);
+                console.log(`Reaction Type : ${request.reactType}`);
+                console.log(`Page URL : ${request.pageUrl}`);
+                console.log(`Item ID : ${request.itemId}`);
                 console.log(`**********************************************************`);
 
                 let likesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'likes');
@@ -252,7 +265,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             hasDisliked = await reactedAlready(table, pageUrl, itemId, 'dislikes');
             hasDisliked = hasDisliked.reactedAlready;
         }
-        
+
         console.log("Likes: " + likes);
         console.log("Dislikes: " + dislikes);
 
@@ -297,11 +310,15 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         console.log(`COUNTING ${type}...`);
 
         await user.get(table).get(pageUrl).get(type).map().once(function (res, key) {
+
+            let keyFound = array.includes(key);
+            let userIdFound = userIdArray.includes(res.userId);
+
             if (res.reacted === false) {
-                console.log(`User has not reacted. Skipping...`);
-            } else if (array.includes(key)) {
-                console.log(`Found a duplicate object. Skipping...`);
-            } else if (userIdArray.includes(res.userId)) {
+                console.log(`User has not reacted. Skipping...`); //prob better to do if !== false and remove msg
+            } else if (keyFound) {
+                console.log(`Found a duplicate key. Skipping...`);
+            } else if (userIdFound) {
                 console.log(`Object has the same userID. Skipping...`);
             } else {
                 array.push(key);
