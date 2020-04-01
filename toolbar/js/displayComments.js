@@ -40,10 +40,10 @@ $(document).ready(async function () {
 </div>
 <div class="toolbar-comments">
 <div class="like"><i class="like-comment red fa fa-thumbs-up"></i></div>
-<div class="like-count">0</div>
+<div class="like-count">${item.likes}</div>
 <div class="dislike"><i class="dislike-comment blue fa fa-thumbs-down"></i></div>
-<div class="dislike-count">0</div>
-<div class="score"><x-star-rating value="0" number="5"></x-star-rating></div>
+<div class="dislike-count">${item.dislikes}</div>
+<div class="score"><x-star-rating value="${item.score}" number="5"></x-star-rating></div>
 </div>
 </div>
 `;
@@ -103,7 +103,7 @@ $(document).ready(async function () {
                         table: "comments",
                         reactType: reactType,
                         pageUrl: url,
-                        key: commentId,
+                        itemId: Math.round(Math.random()*100000),
                         date: getDate()
                     });
                     port.onMessage.addListener(function (res) {

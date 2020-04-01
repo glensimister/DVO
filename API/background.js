@@ -43,17 +43,22 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let array = [];
                     let keys = [];
                     let obj = {};
-                    await page.get('comments').map().once(function (data, key) {
+                    await page.get('comments').map().once(async function (data, key) {
                         if (data) { // What is this checking? 
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
                             } else {
+                                let commentReactions = await getCommentReactions(key);
+                                console.log(commentReactions);
                                 obj = {
                                     key: key,
                                     comment: data.comment,
                                     date: data.date,
                                     photo: data.photo,
-                                    name: data.name
+                                    name: data.name,
+                                    likes: commentReactions.likes,
+                                    dislikes: commentReactions.dislikes,
+                                    score: commentReactions.score
                                 }
                                 keys.push(key);
                                 array.push(obj);
@@ -62,6 +67,17 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     });
                     return array;
                 }
+
+                async function getCommentReactions(key) {
+                    let obj = {
+                        likes: 5,
+                        dislikes: 2,
+                        score: 3
+                    }
+                    return obj;
+                }
+
+
                 return true;
             })();
         }
@@ -103,13 +119,14 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "reaction") {
             (async function () {
-
-                console.log("USER HAS REACTED!");
+                console.log(`**********************************************************`);
+                console.log(`USER HAS REACTED! Type = ${request.reactType}`);
+                console.log(`**********************************************************`);
 
                 let likesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'likes');
                 let dislikesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'dislikes');
                 let page = user.get(request.table).get(request.pageUrl);
-                let id = user.is.pub;
+                let userId = user.is.pub;
                 let hasLiked = false;
                 let hasDisliked = false;
                 let hasLikedKey = null;
@@ -118,28 +135,30 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 let dislikes = 0;
 
                 if (!likesGraphIsEmpty) {
-                    let liked = await reactedAlready(request.table, request.pageUrl, 'likes');
-                    hasLiked = liked.reacted;
+                    let liked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'likes');
+                    hasLiked = liked.reactedAlready;
                     hasLikedKey = liked.key;
-                    console.log("Has the user liked this page already? " + hasLiked);
+                    console.log(`User has liked this page already: ${hasLiked}`);
                 }
 
                 if (!dislikesGraphIsEmpty) {
-                    let disliked = await reactedAlready(request.table, request.pageUrl, 'dislikes');
-                    hasDisliked = disliked.reacted;
+                    let disliked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'dislikes');
+                    hasDisliked = disliked.reactedAlready;
                     hasDislikedKey = disliked.key;
-                    console.log("Has the user disliked this page already? " + hasDisliked);
+                    console.log(`User has liked this page already: ${hasDisliked}`);
                 }
 
 
                 if (request.reactType === 'likes') {
                     if (hasLiked) {
-                        console.log("Deleting: " + hasLikedKey);
-                        page.get(request.reactType).get(hasLikedKey).get('userId').put(null);
+                        console.log(`Revoking page like`);
+                        await page.get(request.reactType).get(hasLikedKey).get('reacted').put(false);
                     } else {
-                        console.log("Liking...");
-                        page.get(request.reactType).set({
-                            userId: id
+                        console.log(`Liking ${request.itemId}`);
+                        await page.get(request.reactType).set({
+                            userId: userId,
+                            reacted: true,
+                            itemId: request.itemId
                         });
                         /*
                         This is firing multiple times even if only one object was set
@@ -148,35 +167,37 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                         });*/
                     }
                     if (hasDisliked) {
-                        console.log("Deleting: " + hasDislikedKey);
-                        page.get('dislikes').get(hasDislikedKey).get('userId').put(null);
+                        console.log(`Revoking page dislike`);
+                        await page.get('dislikes').get(hasDislikedKey).get('reacted').put(false);
                     }
                 }
 
                 if (request.reactType === 'dislikes') {
                     if (hasDisliked) {
-                        console.log("Deleting: " + hasDislikedKey);
-                        page.get(request.reactType).get(hasDislikedKey).get('userId').put(null);
+                        console.log(`Revoking page dislike`);
+                        await page.get(request.reactType).get(hasDislikedKey).get('reacted').put(false);
                     } else {
-                        console.log("Disliking...");
-                        page.get(request.reactType).set({
-                            userId: id
+                        console.log(`Disliking ${request.itemId}`);
+                        await page.get(request.reactType).set({
+                            userId: userId,
+                            reacted: true,
+                            itemId: request.itemId
                         });
                     }
                     if (hasLiked) {
-                        console.log("Deleting: " + hasLikedKey);
-                        page.get('likes').get(hasLikedKey).get('userId').put(null);
+                        console.log(`Revoking page like`);
+                        await page.get('likes').get(hasLikedKey).get('reacted').put(false);
                     }
                 }
 
                 console.log("Refreshing scores...");
-                getNumPageLikes(request.table, request.pageUrl);
+                getNumPageLikes(request.table, request.pageUrl, request.itemId);
                 return true;
             })();
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////  
         else if (request.type === "getNumPageLikes") {
-            getNumPageLikes(request.table, request.pageUrl);
+            getNumPageLikes(request.table, request.pageUrl, request.itemId);
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,7 +231,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         });
     }
 
-    async function getNumPageLikes(table, pageUrl) {
+    async function getNumPageLikes(table, pageUrl, itemId) {
+        console.log(`GETTING PAGE REACTIONS...`);
 
         let likesGraphIsEmpty = await isEmpty(table, pageUrl, 'likes');
         let dislikesGraphIsEmpty = await isEmpty(table, pageUrl, 'dislikes');
@@ -221,19 +243,18 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
         if (!likesGraphIsEmpty) {
             likes = await countLikes(table, pageUrl, 'likes');
-            hasLiked = await reactedAlready(table, pageUrl, 'likes');
-            hasLiked = hasLiked.reacted;
+            hasLiked = await reactedAlready(table, pageUrl, itemId, 'likes');
+            hasLiked = hasLiked.reactedAlready;
         }
 
         if (!dislikesGraphIsEmpty) {
             dislikes = await countLikes(table, pageUrl, 'dislikes');
-            hasDisliked = await reactedAlready(table, pageUrl, 'dislikes');
-            hasDisliked = hasDisliked.reacted;
+            hasDisliked = await reactedAlready(table, pageUrl, itemId, 'dislikes');
+            hasDisliked = hasDisliked.reactedAlready;
         }
-
+        
         console.log("Likes: " + likes);
         console.log("Dislikes: " + dislikes);
-        console.log("********************************************************");
 
         let score = calculatePageScore(likes, dislikes);
         port.postMessage({
@@ -273,14 +294,15 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         let array = [];
         let userIdArray = [];
         let count = 0;
+        console.log(`COUNTING ${type}...`);
 
         await user.get(table).get(pageUrl).get(type).map().once(function (res, key) {
-            if (res.userId === null) {
-                console.log(`Found a ${res.userId} object. Skipping...`);
+            if (res.reacted === false) {
+                console.log(`User has not reacted. Skipping...`);
             } else if (array.includes(key)) {
-                console.log("Found a duplicate object. Skipping...");
+                console.log(`Found a duplicate object. Skipping...`);
             } else if (userIdArray.includes(res.userId)) {
-                console.log("Object has the same userID. Skipping...");
+                console.log(`Object has the same userID. Skipping...`);
             } else {
                 array.push(key);
                 userIdArray.push(res.userId);
@@ -290,21 +312,45 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         return count;
     }
 
-    async function reactedAlready(table, pageUrl, type) {
+    async function reactedAlready(table, pageUrl, itemId, type) {
+        let array = [];
+        let userIdArray = [];
         let obj = {
-            reacted: false,
+            reactedAlready: false,
             key: null
-        }
+        };
+
+        console.log(`CHECKING FOR EXISTING ${type}...`);
+
         await user.get(table).get(pageUrl).get(type).map().once(function (data, key) {
-            if (data !== null) {
-                if (data.userId === user.is.pub) {
+            if (data !== null) { //what is this checking? 
+
+                let userId = data.userId;
+                let keyFound = array.includes(key);
+                let userIdFound = userIdArray.includes(data.userId);
+
+                console.log(`${type}: UserID: ${userId.substr(0, 10)}(...) has already reacted ${data.reacted} to ItemId: ${data.itemId}`);
+
+                if (keyFound) {
+                    console.log(`Found a duplicate key. Skipping...`);
+                } else if (userIdFound) {
+                    console.log(`Found a duplicate userId. Skipping...`);
+                } else if (data.userId === user.is.pub && data.reacted && data.itemId === itemId) {
+                    array.push(key);
+                    userIdArray.push(data.userId);
                     obj = {
-                        reacted: true,
+                        reactedAlready: true,
+                        key: key
+                    }
+                } else {
+                    obj = {
+                        reactedAlready: false,
                         key: key
                     }
                 }
             }
         });
+        console.log(`Returning ${obj.reactedAlready}...`);
         return obj;
     }
 
@@ -440,61 +486,3 @@ Gun.on('opt', function (ctx) {
         }
     });
 });*/
-
-/*async function isEmpty(pageUrl, type) {
-    return new Promise(resolve => {
-        setTimeout(() => {
-            user.get('pageReviews').get(pageUrl).get(type).once(function (data) {
-                if (data === undefined || data === null) {
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            });
-        }, 100);
-    });
-}*/
-
-/*async function countLikes(pageUrl, type) {
-    let array = [];
-    let count = 0;
-    return new Promise(resolve => {
-        setTimeout(async() => {
-            await user.get('pageReviews').get(pageUrl).get(type).map().once(function (res, key) {
-                if (res.userId === null) {
-                    console.log(`Found a ${res.userId} object. Skipping...`);
-                } else if (array.includes(key)) {
-                    console.log("Found a duplicate object. Skipping...");
-                } else {
-                    console.log("Found userID: " + res.userId);
-                    array.push(key);
-                    count++;
-                    console.log("Reaction count: " + count);
-                }
-            });
-            resolve(count);
-        }, 100);
-    });
-}*/
-
-/*async function reactedAlready(pageUrl, type) {
-    let obj = {
-        reacted: false,
-        key: null
-    }
-    return new Promise(resolve => {
-        setTimeout(() => {
-            user.get('pageReviews').get(pageUrl).get(type).map().once(function (data, key) {
-                if (data !== null) {
-                    if (data.userId === user.is.pub) {
-                        obj = {
-                            reacted: true,
-                            key: key
-                        }
-                    }
-                }
-                resolve(obj);
-            });
-        }, 100);
-    });
-}*/

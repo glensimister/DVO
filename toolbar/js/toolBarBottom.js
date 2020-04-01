@@ -109,22 +109,24 @@ class ToolBarBottom extends HTMLElement {
                 return date;
             }
 
-            $(like).on('click', async function () {
+            $(like).on('click', async function (e) {
+                e.stopImmediatePropagation();
 
                 $(like).find('i').toggleClass("red gray");
                 $(dislike).find('i').removeClass("gray");
                 $(dislike).find('i').addClass("blue");
-                let key = $(like).data('key');
+                //let key = $(like).data('key');
 
                 // i'm not sure what to do with the title (document.title) yet. 
                 // I need to get the title and description of the page. maybe it would be better to pull this from google on the fly
+                let itemId = 94299; // this needs to be dynamic
 
                 port.postMessage({
                     type: "reaction",
                     table: "pageReviews",
                     reactType: "likes",
                     pageUrl: url,
-                    key: key,
+                    itemId: url,
                     date: getDate()
                 });
 
@@ -151,20 +153,21 @@ class ToolBarBottom extends HTMLElement {
             });
 
 
-            $(dislike).on('click', async function () {
-
+            $(dislike).on('click', async function (e) {
+                e.stopImmediatePropagation();
                 $(dislike).find('i').toggleClass("blue gray");
                 $(like).find('i').removeClass("gray");
                 $(like).find('i').addClass("red");
 
-                let key = $(dislike).data('key');
+                //let key = $(dislike).data('key');
+                let itemId = 36299; // this needs to be dynamic
 
                 port.postMessage({
                     type: "reaction",
                     table: "pageReviews",
                     reactType: "dislikes",
                     pageUrl: url,
-                    key: key,
+                    itemId: url,
                     date: getDate()
                 });
 
