@@ -7,9 +7,10 @@ var port = chrome.runtime.connect({
     name: "dvo"
 });
 
-/**** Generate vanity key 
-(async function () {
 
+
+$('.generate').click(async function () {
+    $('#keys').html(`<div>Generating keys...</div><img src="/images/widget-loader.gif" /><p>This may take a few minutes. Please don't touch anything while your keys are being generated.</p>`);
     let pair = await SEA.pair();
     let pubKey = pair.pub;
     let x = 3;
@@ -24,11 +25,23 @@ var port = chrome.runtime.connect({
         last = pubKey.substr(-x);
         count++;
     }
+    $('#generate').html(`<button class="copy btn btn-green"><i class="fa fa-clipboard"></i>&nbsp;&nbsp;COPY TO CLIPBOARD</button>`);
+    $('#keys').html(`<div>Your keys have been generated. Please copy them to the clipboard, click 'register' below, and then paste your keys in a safe place!</div><input id="output" class="form-control" value="Public Key : ${pubKey} | Private Key: ${pair.priv}" />`);
+    $('.username').val(pubKey);
+    $('.password').val(pair.priv);
     console.log(first + " / " + last);
     console.log("Generating: " + pubKey + " took " + count + " attempts");
+});
 
-})();
-/****/
+$('#generate').on('click', '.copy', function () {
+    //let usr = $('.username');
+    //let pw = $('.password');
+    //usr.select();
+    //pw.select();
+    let output = document.getElementById('output');
+    output.select();
+    document.execCommand("copy");
+});
 
 isUserLoggedIn();
 
@@ -45,6 +58,7 @@ function isUserLoggedIn() {
         }
     });
 }
+
 
 $('.register').click(function () {
     //let profileName = $('.profile-name').val()

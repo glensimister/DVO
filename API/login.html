@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
 </head>
 
 
@@ -22,7 +23,7 @@
             <h4>LOGIN</h4>
             <div class="form-group">
                 <p>WebID</p>
-                <input type="text" class="form-control username" value="https://devolution.inrupt.net/profile/card#me">
+                <input type="text" class="form-control username" value="Guest User">
             </div>
             <div class="form-group">
                 <p>Password</p>
@@ -35,16 +36,24 @@
     <div id="register" style="display:none;">
         <div id="form">
             <h4>REGISTER</h4>
+            <div id="generate">
+                <button class="btn btn-red generate">GENERATE KEYS</button>
+            </div>
+            <div id="keys"></div>
             <!--<div class="form-group">
-                <p>Name (Can get this from the user's pod)</p>
+                <p>Name</p>
                 <input type="text" class="form-control profile-name" value="Bob Smith">
             </div>-->
             <div class="form-group">
+                <p>Public Key</p>
+                <input type="text" class="form-control username" value="Guest User">
+            </div>
+            <!--<div class="form-group">
                 <p>WebID - Don't have one? <a target="_blank" href="https://inrupt.net/">Get one here</a></p>
                 <input type="text" class="form-control username" value="https://devolution.inrupt.net/profile/card#me">
-            </div>
+            </div>-->
             <div class="form-group">
-                <p>Password</p>
+                <p>Private Key</p>
                 <input type="password" class="form-control password" value="password">
             </div>
             <button class="btn btn-blue register">REGISTER</button>
