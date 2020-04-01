@@ -52,19 +52,19 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let hasDisliked = false;
 
                     /***** this code need to be below but gun doesn't seem to like async functions ****/
+
                     if (!likesGraphIsEmpty) {
                         likes = await countLikes('commentReactions', request.pageUrl, 'likes');
-                        //hasLiked = await reactedAlready('commentReactions', request.pageUrl, request.itemId, 'likes');
+                        //hasLiked = await reactedAlready('commentReactions', request.pageUrl, key, 'likes');
                         //hasLiked = hasLiked.reactedAlready;
                     }
 
                     if (!dislikesGraphIsEmpty) {
                         dislikes = await countLikes('commentReactions', request.pageUrl, 'dislikes');
-                        //hasDisliked = await reactedAlready('commentReactions', request.pageUrl, request.itemId, 'dislikes');
+                        //hasDisliked = await reactedAlready('commentReactions', request.pageUrl, key, 'dislikes');
                         //hasDisliked = hasDisliked.reactedAlready;
                     }
 
-                    let score = calculatePageScore(likes, dislikes);
                     /************************************************************************************/
 
                     await page.get('comments').map().once(async function (data, key) {
@@ -73,6 +73,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
                             } else {
+
+                                let score = calculatePageScore(likes, dislikes);
 
                                 obj = {
                                     key: key,
@@ -86,6 +88,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                                     hasDisliked: hasDisliked,
                                     score: score
                                 }
+
                                 keys.push(key);
                                 array.push(obj);
                             }
