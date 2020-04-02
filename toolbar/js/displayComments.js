@@ -26,7 +26,11 @@ $(document).ready(async function () {
         port.onMessage.addListener(function (res) {
             if (res.type == "pageComments") {
                 let json = JSON.parse(res.comments);
-                $("#dialogBody").html("");
+                
+                if (json.length > 0){
+                    $("#dialogBody").html("");
+                }
+
                 json.forEach(function (item, index) {
 
                     let likeClass;
@@ -75,12 +79,18 @@ $(document).ready(async function () {
 
                 $('.delete-post').on("click", function () {
                     let commentId = $(this).parent().attr('id');
+                    let _this = this;
                     port.postMessage({
                         type: "deleteComment",
                         commentId: commentId,
                         pageUrl: url
                     });
-                    $(this).parent().remove();
+                    port.onMessage.addListener(function (res) {
+                        if (res.type === "commentDeleted") {
+                            $(_this).parent().remove();
+                        }
+                    });
+
                 });
 
                 $('.edit-post').on("click", function () {

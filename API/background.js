@@ -131,6 +131,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 comment.get('name').put(null);
                 comment.get('photo').put(null);
                 comment.get('userId').put(null);
+                port.postMessage({
+                    type: 'commentDeleted'
+                });
             }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -141,86 +144,88 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "reaction") {
-            (async function () {
-                console.log(`**********************************************************`);
-                console.log(`USER HAS REACTED!`);
-                console.log(`Table : ${request.table}`);
-                console.log(`Reaction Type : ${request.reactType}`);
-                console.log(`Page URL : ${request.pageUrl}`);
-                console.log(`Item ID : ${request.itemId}`);
-                console.log(`**********************************************************`);
+            if (window.confirm(`Confirm reaction to ${request.pageUrl}`)) {
+                (async function () {
+                    console.log(`**********************************************************`);
+                    console.log(`USER HAS REACTED!`);
+                    console.log(`Table : ${request.table}`);
+                    console.log(`Reaction Type : ${request.reactType}`);
+                    console.log(`Page URL : ${request.pageUrl}`);
+                    console.log(`Item ID : ${request.itemId}`);
+                    console.log(`**********************************************************`);
 
-                let likesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'likes');
-                let dislikesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'dislikes');
-                let page = user.get(request.table).get(request.pageUrl);
-                let userId = user.is.pub;
-                let hasLiked = false;
-                let hasDisliked = false;
-                let hasLikedKey = null;
-                let hasDislikedKey = null;
-                let likes = 0;
-                let dislikes = 0;
+                    let likesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'likes');
+                    let dislikesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'dislikes');
+                    let page = user.get(request.table).get(request.pageUrl);
+                    let userId = user.is.pub;
+                    let hasLiked = false;
+                    let hasDisliked = false;
+                    let hasLikedKey = null;
+                    let hasDislikedKey = null;
+                    let likes = 0;
+                    let dislikes = 0;
 
-                if (!likesGraphIsEmpty) {
-                    let liked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'likes');
-                    hasLiked = liked.reactedAlready;
-                    hasLikedKey = liked.key;
-                    console.log(`User has liked this page already: ${hasLiked}`);
-                }
-
-                if (!dislikesGraphIsEmpty) {
-                    let disliked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'dislikes');
-                    hasDisliked = disliked.reactedAlready;
-                    hasDislikedKey = disliked.key;
-                    console.log(`User has liked this page already: ${hasDisliked}`);
-                }
-
-
-                if (request.reactType === 'likes') {
-                    if (hasLiked) {
-                        console.log(`Revoking page like`);
-                        await page.get(request.reactType).get(hasLikedKey).get('reacted').put(false);
-                    } else {
-                        console.log(`Liking ${request.itemId}`);
-                        await page.get(request.reactType).set({
-                            userId: userId,
-                            reacted: true,
-                            itemId: request.itemId
-                        });
-                        /*
-                        This is firing multiple times even if only one object was set
-                        page.get(request.reactType).map().once(function (data, key) {
-                            console.log("data has been added with key: " + key);
-                        });*/
+                    if (!likesGraphIsEmpty) {
+                        let liked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'likes');
+                        hasLiked = liked.reactedAlready;
+                        hasLikedKey = liked.key;
+                        console.log(`User has liked this page already: ${hasLiked}`);
                     }
-                    if (hasDisliked) {
-                        console.log(`Revoking page dislike`);
-                        await page.get('dislikes').get(hasDislikedKey).get('reacted').put(false);
-                    }
-                }
 
-                if (request.reactType === 'dislikes') {
-                    if (hasDisliked) {
-                        console.log(`Revoking page dislike`);
-                        await page.get(request.reactType).get(hasDislikedKey).get('reacted').put(false);
-                    } else {
-                        console.log(`Disliking ${request.itemId}`);
-                        await page.get(request.reactType).set({
-                            userId: userId,
-                            reacted: true,
-                            itemId: request.itemId
-                        });
+                    if (!dislikesGraphIsEmpty) {
+                        let disliked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'dislikes');
+                        hasDisliked = disliked.reactedAlready;
+                        hasDislikedKey = disliked.key;
+                        console.log(`User has liked this page already: ${hasDisliked}`);
                     }
-                    if (hasLiked) {
-                        console.log(`Revoking page like`);
-                        await page.get('likes').get(hasLikedKey).get('reacted').put(false);
-                    }
-                }
 
-                console.log("Refreshing scores...");
-                getNumPageLikes(request.table, request.pageUrl, request.itemId);
-                return true;
-            })();
+
+                    if (request.reactType === 'likes') {
+                        if (hasLiked) {
+                            console.log(`Revoking page like`);
+                            await page.get(request.reactType).get(hasLikedKey).get('reacted').put(false);
+                        } else {
+                            console.log(`Liking ${request.itemId}`);
+                            await page.get(request.reactType).set({
+                                userId: userId,
+                                reacted: true,
+                                itemId: request.itemId
+                            });
+                            /*
+                            This is firing multiple times even if only one object was set
+                            page.get(request.reactType).map().once(function (data, key) {
+                                console.log("data has been added with key: " + key);
+                            });*/
+                        }
+                        if (hasDisliked) {
+                            console.log(`Revoking page dislike`);
+                            await page.get('dislikes').get(hasDislikedKey).get('reacted').put(false);
+                        }
+                    }
+
+                    if (request.reactType === 'dislikes') {
+                        if (hasDisliked) {
+                            console.log(`Revoking page dislike`);
+                            await page.get(request.reactType).get(hasDislikedKey).get('reacted').put(false);
+                        } else {
+                            console.log(`Disliking ${request.itemId}`);
+                            await page.get(request.reactType).set({
+                                userId: userId,
+                                reacted: true,
+                                itemId: request.itemId
+                            });
+                        }
+                        if (hasLiked) {
+                            console.log(`Revoking page like`);
+                            await page.get('likes').get(hasLikedKey).get('reacted').put(false);
+                        }
+                    }
+
+                    console.log("Refreshing scores...");
+                    getNumPageLikes(request.table, request.pageUrl, request.itemId);
+                    return true;
+                })();
+            }
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////  
         else if (request.type === "getNumPageLikes") {
