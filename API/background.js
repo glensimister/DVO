@@ -68,8 +68,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     /************************************************************************************/
 
                     await page.get('comments').map().once(async function (data, key) {
-
-                        if (data) { // What is this checking? 
+                        console.log(data);
+                        if (data.comment !== null) { // What is this checking? 
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
                             } else {
@@ -126,7 +126,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "deleteComment") {
             if (window.confirm(`Confirm delete comment`)) {
-                user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).put(null);
+                user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('comment').put(null);
             }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
