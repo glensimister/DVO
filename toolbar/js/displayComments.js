@@ -73,7 +73,7 @@ $(document).ready(async function () {
                 });
 
 
-                $(document).on("click", '.delete-post', function () {
+                $('.delete-post').on("click", function () {
                     let commentId = $(this).parent().attr('id');
                     port.postMessage({
                         type: "deleteComment",
@@ -83,7 +83,7 @@ $(document).ready(async function () {
                     $(this).parent().remove();
                 });
 
-                $(document).on("click", '.edit-post', function () {
+                $('.edit-post').on("click", function () {
                     let currentText = $(".post-desc").html();
                     if ($(this).hasClass('fa-edit')) {
                         $(".post-desc").attr("contenteditable", "true");
