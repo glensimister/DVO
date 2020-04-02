@@ -66,7 +66,7 @@ $(document).ready(async function () {
 
                     //let comment = document.getElementById("comment");
                     //let comments = document.querySelectorAll("#comments");
-                    //let postDesc = document.querySelector(".post-desc");
+                    let postDesc = document.querySelector(".post-desc"); // this could be jquery to make it more consistent
 
                     $("#dialogBody").append(template);
                     $('#comments').html(res.count);
