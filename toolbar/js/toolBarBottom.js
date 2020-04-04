@@ -126,7 +126,7 @@ class ToolBarBottom extends HTMLElement {
                     table: "pageReviews",
                     reactType: "likes",
                     pageUrl: url,
-                    itemId: url,
+                    itemId: Math.random().toString(36).slice(-6),
                     date: getDate()
                 });
 
@@ -167,7 +167,7 @@ class ToolBarBottom extends HTMLElement {
                     table: "pageReviews",
                     reactType: "dislikes",
                     pageUrl: url,
-                    itemId: url,
+                    itemId: Math.random().toString(36).slice(-6),
                     date: getDate()
                 });
 

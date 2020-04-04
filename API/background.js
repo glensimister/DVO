@@ -28,10 +28,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getComments") {
             (async function () {
-
-                let likesGraphIsEmpty = await isEmpty('commentReactions', request.pageUrl, 'likes');
-                let dislikesGraphIsEmpty = await isEmpty('commentReactions', request.pageUrl, 'dislikes');
-                let page = user.get('pageReviews').get(request.pageUrl);
                 let comments = await getComments();
                 let json = JSON.stringify(comments);
                 let len = comments.length;
@@ -50,44 +46,26 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let dislikes = 0;
                     let hasLiked = false;
                     let hasDisliked = false;
-
-                    /***** this code need to be below but gun doesn't seem to like async functions ****/
-
-                    if (!likesGraphIsEmpty) {
-                        likes = await countLikes('commentReactions', request.pageUrl, 'likes');
-                        //hasLiked = await reactedAlready('commentReactions', request.pageUrl, key, 'likes');
-                        //hasLiked = hasLiked.reactedAlready;
-                    }
-
-                    if (!dislikesGraphIsEmpty) {
-                        dislikes = await countLikes('commentReactions', request.pageUrl, 'dislikes');
-                        //hasDisliked = await reactedAlready('commentReactions', request.pageUrl, key, 'dislikes');
-                        //hasDisliked = hasDisliked.reactedAlready;
-                    }
-
-                    /************************************************************************************/
-
-                    await page.get('comments').map().once(async function (data, key) {
+                    await user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data, key) {
+                        console.log(data);
                         if (data.comment !== null) {
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
                             } else {
-
-                                let score = calculatePageScore(likes, dislikes);
+                                let score = calculatePageScore(data.likes, data.dislikes);
 
                                 obj = {
-                                    key: key,
+                                    key: data.commentId,
                                     comment: data.comment,
                                     date: data.date,
                                     photo: data.photo,
                                     name: data.name,
-                                    likes: likes,
-                                    dislikes: dislikes,
+                                    likes: data.likes,
+                                    dislikes: data.dislikes,
                                     hasLiked: hasLiked,
                                     hasDisliked: hasDisliked,
                                     score: score
                                 }
-
                                 keys.push(key);
                                 array.push(obj);
                             }
@@ -103,12 +81,17 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             if (window.confirm(`Confirm add comment`)) {
                 let photo = await getProfilePicture();
                 let name = await getName();
-                user.get('pageReviews').get(request.pageUrl).get('comments').set({
+                let userId = user.is.pub;
+                user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).put({
+                    commentId: request.commentId,
                     comment: request.comment,
                     date: request.date,
                     name: name,
                     photo: photo,
-                    userId: user.is.pub
+                    userId: userId,
+                    likes: 0,
+                    dislikes: 0,
+                    score: 0
                 });
             }
             return true;
@@ -122,6 +105,35 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             });
             return true;
         }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (request.type === "likeComment") {
+            if (window.confirm(`Confirm like comment`)) {
+                (async function () {
+                    let chain = user.get('pageReviews').get(request.pageUrl).get('comments');
+                    
+                    async function getCommentLikes() {
+                        let likes;
+                        await chain.map().once(function (data) {
+                            if (data.commentId === request.commentId) {
+                                likes = data.likes;
+                            }
+                        });
+                        return likes;
+                    }
+
+                    let result = await getCommentLikes();
+                    let commentLikes = result + 1;
+                    // will prob need to sign this somehow in order to check the user hasn't alread liked the comment
+                    chain.get(request.commentId).get('likes').put(commentLikes);
+                    //user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('likes').set({user.is.pub});
+                    port.postMessage({
+                        type: 'commentLiked',
+                        count: commentLikes
+                    });
+                })();
+                return true;
+            }
+        }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
         else if (request.type === "deleteComment") {
             if (window.confirm(`Confirm delete comment`)) {
@@ -131,6 +143,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                 comment.get('name').put(null);
                 comment.get('photo').put(null);
                 comment.get('userId').put(null);
+                comment.get('likes').put(null);
+                comment.get('dislikes').put(null);
+                comment.get('score').put(null);
                 port.postMessage({
                     type: 'commentDeleted'
                 });
@@ -166,14 +181,14 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let dislikes = 0;
 
                     if (!likesGraphIsEmpty) {
-                        let liked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'likes');
+                        let liked = await reactedAlready(request.table, request.pageUrl, 'likes');
                         hasLiked = liked.reactedAlready;
                         hasLikedKey = liked.key;
                         console.log(`User has liked this page already: ${hasLiked}`);
                     }
 
                     if (!dislikesGraphIsEmpty) {
-                        let disliked = await reactedAlready(request.table, request.pageUrl, request.itemId, 'dislikes');
+                        let disliked = await reactedAlready(request.table, request.pageUrl, 'dislikes');
                         hasDisliked = disliked.reactedAlready;
                         hasDislikedKey = disliked.key;
                         console.log(`User has liked this page already: ${hasDisliked}`);
@@ -222,19 +237,19 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     }
 
                     console.log("Refreshing scores...");
-                    getNumPageLikes(request.table, request.pageUrl, request.itemId);
+                    getNumPageLikes(request.table, request.pageUrl);
                     return true;
                 })();
             }
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////  
         else if (request.type === "getNumPageLikes") {
-            getNumPageLikes(request.table, request.pageUrl, request.itemId);
+            getNumPageLikes(request.table, request.pageUrl);
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getAll") {
-            getAll(request.pageUrl, request.reactType);
+            getAll(request.pageUrl, request.itemId, request.reactType);
             return true;
         }
     });
@@ -243,7 +258,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
     /********** Helper functions **********/
 
-    function getAll(pageUrl, type) {
+    function getAll(pageUrl, itemId, type) {
         let array = [];
         user.get('pageReviews').get(pageUrl).get(type).map().on(function (data, key) {
             if (data !== undefined) {
@@ -263,7 +278,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         });
     }
 
-    async function getNumPageLikes(table, pageUrl, itemId) {
+    async function getNumPageLikes(table, pageUrl) {
         console.log(`GETTING PAGE REACTIONS...`);
 
         let likesGraphIsEmpty = await isEmpty(table, pageUrl, 'likes');
@@ -275,13 +290,13 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
         if (!likesGraphIsEmpty) {
             likes = await countLikes(table, pageUrl, 'likes');
-            hasLiked = await reactedAlready(table, pageUrl, itemId, 'likes');
+            hasLiked = await reactedAlready(table, pageUrl, 'likes');
             hasLiked = hasLiked.reactedAlready;
         }
 
         if (!dislikesGraphIsEmpty) {
             dislikes = await countLikes(table, pageUrl, 'dislikes');
-            hasDisliked = await reactedAlready(table, pageUrl, itemId, 'dislikes');
+            hasDisliked = await reactedAlready(table, pageUrl, 'dislikes');
             hasDisliked = hasDisliked.reactedAlready;
         }
 
@@ -348,7 +363,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         return count;
     }
 
-    async function reactedAlready(table, pageUrl, itemId, type) {
+    async function reactedAlready(table, pageUrl, type) {
         let array = [];
         let userIdArray = [];
         let obj = {
@@ -371,7 +386,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     console.log(`Found a duplicate key. Skipping...`);
                 } else if (userIdFound) {
                     console.log(`Found a duplicate userId. Skipping...`);
-                } else if (data.userId === user.is.pub && data.reacted && data.itemId === itemId) {
+                } else if (data.userId === user.is.pub && data.reacted) {
                     array.push(key);
                     userIdArray.push(data.userId);
                     obj = {

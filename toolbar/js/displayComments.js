@@ -8,9 +8,12 @@ $(document).ready(async function () {
 
     $(".post-comment-btn").on('click', function (e) {
         e.stopImmediatePropagation();
+        let id = Math.random().toString(36).slice(-6);
+        //url = `${url}?=${id}`;
         let newComment = $(".post-comment").val();
         port.postMessage({
             type: "addComment",
+            commentId: id,
             pageUrl: url,
             comment: newComment,
             date: getDate()
@@ -26,27 +29,15 @@ $(document).ready(async function () {
         port.onMessage.addListener(function (res) {
             if (res.type == "pageComments") {
                 let json = JSON.parse(res.comments);
-                
-                if (json.length > 0){
+
+                if (json.length > 0) {
                     $("#dialogBody").html("");
                 }
 
-                json.forEach(function (item, index) {
+                let likeClass = 'red';
+                let dislikeClass = 'blue';
 
-                    let likeClass;
-                    let dislikeClass;
-
-                    if (item.hasLiked) {
-                        likeClass = "gray";
-                    } else {
-                        likeClass = "red";
-                    }
-
-                    if (item.hasDisliked) {
-                        dislikeClass = "gray";
-                    } else {
-                        dislikeClass = "blue";
-                    }
+                json.forEach(async function (item, index) {
 
                     let template = `<div id="${item.key}" class="post">
 <i class="edit-post fa fa-edit"></i>
@@ -68,8 +59,7 @@ $(document).ready(async function () {
 </div>
 `;
 
-                    //let comment = document.getElementById("comment");
-                    //let comments = document.querySelectorAll("#comments");
+
                     let postDesc = document.querySelector(".post-desc"); // this could be jquery to make it more consistent
 
                     $("#dialogBody").append(template);
@@ -117,7 +107,13 @@ $(document).ready(async function () {
 
                 $(".like").on('click', function () {
                     let commentId = $(this).parent().parent().attr('id');
-                    likeComment('likes', commentId);
+                    port.postMessage({
+                        type: "likeComment",
+                        pageUrl: url,
+                        commentId: commentId
+                    });
+
+                    //likeComment('likes', commentId);
                     $(this).find('i').toggleClass("red gray");
                 });
                 $(".dislike").on('click', function () {
@@ -129,20 +125,20 @@ $(document).ready(async function () {
                 function likeComment(reactType, id) {
                     port.postMessage({
                         type: "reaction",
-                        table: "commentReactions",
+                        table: "pageReviews",
                         reactType: reactType,
                         pageUrl: url,
                         itemId: id,
                         date: getDate()
                     });
                     port.onMessage.addListener(function (res) {
-                        if (res.type === "commentReactions") {
-                            $(".like-count").html(res.likes);
-                            $(".dislike-count").html(res.dislikes);
+                        if (res.type === "pageReviews") {
+                            $(`#${id} .like-count`).html(res.likes);
+                            $(`#${id} .dislike-count`).html(res.dislikes);
 
                             // better to set this with jquery
                             let score = `<x-star-rating value="${res.pageScore}" number="5"></x-star-rating>`;
-                            $('.score').html(score);
+                            $(`#${id} .score`).html(score);
                         }
                     });
                 }
