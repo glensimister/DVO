@@ -125,7 +125,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let commentLikes = result + 1;
                     // will prob need to sign this somehow in order to check the user hasn't alread liked the comment
                     chain.get(request.commentId).get('likes').put(commentLikes);
-                    //user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId).get('likes').set({user.is.pub});
+                    let userId = user.is.pub;
+                    chain.get(request.commentId).get('users').set(userId); // can use this to check for duplicates
                     port.postMessage({
                         type: 'commentLiked',
                         count: commentLikes
