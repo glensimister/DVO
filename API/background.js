@@ -110,7 +110,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             if (window.confirm(`Confirm like comment`)) {
                 (async function () {
                     let chain = user.get('pageReviews').get(request.pageUrl).get('comments');
-                    
+
                     async function getCommentLikes() {
                         let likes;
                         await chain.map().once(function (data) {
@@ -159,93 +159,161 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             }
         }
         //////////////////////////////////////////////////////////////////////////////////////////////////// 
-        else if (request.type === "reaction") {
-            if (window.confirm(`Confirm reaction to ${request.pageUrl}`)) {
+        else if (request.type === "likePage") {
+            if (window.confirm(`Confirm like page`)) {
                 (async function () {
-                    console.log(`**********************************************************`);
-                    console.log(`USER HAS REACTED!`);
-                    console.log(`Table : ${request.table}`);
-                    console.log(`Reaction Type : ${request.reactType}`);
-                    console.log(`Page URL : ${request.pageUrl}`);
-                    console.log(`Item ID : ${request.itemId}`);
-                    console.log(`**********************************************************`);
-
-                    let likesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'likes');
-                    let dislikesGraphIsEmpty = await isEmpty(request.table, request.pageUrl, 'dislikes');
-                    let page = user.get(request.table).get(request.pageUrl);
-                    let userId = user.is.pub;
-                    let hasLiked = false;
-                    let hasDisliked = false;
-                    let hasLikedKey = null;
-                    let hasDislikedKey = null;
                     let likes = 0;
                     let dislikes = 0;
+                    let likedAlready = false;
+                    let dislikedAlready = false;
+                    let score = 0;
+                    let pubKey = user.is.pub;
+                    let likesChain = user.get('pageReviews').get(request.pageUrl).get('likes');
+                    let dislikesChain = user.get('pageReviews').get(request.pageUrl).get('dislikes');
+                    let likesChainIsEmpty = await isEmpty('pageReviews', request.pageUrl, 'likes');
+                    let dislikesChainIsEmpty = await isEmpty('pageReviews', request.pageUrl, 'dislikes');
 
-                    if (!likesGraphIsEmpty) {
-                        let liked = await reactedAlready(request.table, request.pageUrl, 'likes');
-                        hasLiked = liked.reactedAlready;
-                        hasLikedKey = liked.key;
-                        console.log(`User has liked this page already: ${hasLiked}`);
+                    if (!likesChainIsEmpty) {
+                        likes = await getPageLikes();
+                        likedAlready = await likesChain.get('users').get(pubKey);
                     }
 
-                    if (!dislikesGraphIsEmpty) {
-                        let disliked = await reactedAlready(request.table, request.pageUrl, 'dislikes');
-                        hasDisliked = disliked.reactedAlready;
-                        hasDislikedKey = disliked.key;
-                        console.log(`User has liked this page already: ${hasDisliked}`);
+                    if (!dislikesChainIsEmpty) {
+                        dislikes = await getPageDislikes();
+                        dislikedAlready = await dislikesChain.get('users').get(pubKey);
                     }
 
-
-                    if (request.reactType === 'likes') {
-                        if (hasLiked) {
-                            console.log(`Revoking page like`);
-                            await page.get(request.reactType).get(hasLikedKey).get('reacted').put(false);
-                        } else {
-                            console.log(`Liking ${request.itemId}`);
-                            await page.get(request.reactType).set({
-                                userId: userId,
-                                reacted: true,
-                                itemId: request.itemId
+                    if (request.reactType === 'like') {
+                        if (!likedAlready) {
+                            likes++;
+                            await likesChain.put({
+                                likes: likes
                             });
-                            /*
-                            This is firing multiple times even if only one object was set
-                            page.get(request.reactType).map().once(function (data, key) {
-                                console.log("data has been added with key: " + key);
-                            });*/
+                            await likesChain.get('users').get(pubKey).put(true);
                         }
-                        if (hasDisliked) {
-                            console.log(`Revoking page dislike`);
-                            await page.get('dislikes').get(hasDislikedKey).get('reacted').put(false);
-                        }
-                    }
 
-                    if (request.reactType === 'dislikes') {
-                        if (hasDisliked) {
-                            console.log(`Revoking page dislike`);
-                            await page.get(request.reactType).get(hasDislikedKey).get('reacted').put(false);
-                        } else {
-                            console.log(`Disliking ${request.itemId}`);
-                            await page.get(request.reactType).set({
-                                userId: userId,
-                                reacted: true,
-                                itemId: request.itemId
+                        if (likedAlready) {
+                            likes--;
+                            await likesChain.put({
+                                likes: likes
                             });
+                            await likesChain.get('users').get(pubKey).put(false);
                         }
-                        if (hasLiked) {
-                            console.log(`Revoking page like`);
-                            await page.get('likes').get(hasLikedKey).get('reacted').put(false);
+
+                        if (dislikedAlready) {
+                            dislikes--;
+                            await dislikesChain.put({
+                                dislikes: dislikes
+                            });
+                            await dislikesChain.get('users').get(pubKey).put(false);
+                        }
+                    } else if (request.reactType === 'dislike') {
+                        if (!dislikedAlready) {
+                            dislikes++;
+                            await dislikesChain.put({
+                                dislikes: dislikes
+                            });
+                            await dislikesChain.get('users').get(pubKey).put(true);
+                        }
+
+                        if (dislikedAlready) {
+                            dislikes--;
+                            await dislikesChain.put({
+                                dislikes: dislikes
+                            });
+                            await dislikesChain.get('users').get(pubKey).put(false);
+                        }
+
+                        if (likedAlready) {
+                            likes--;
+                            await likesChain.put({
+                                likes: likes
+                            });
+                            await likesChain.get('users').get(pubKey).put(false);
                         }
                     }
 
-                    console.log("Refreshing scores...");
-                    getNumPageLikes(request.table, request.pageUrl);
-                    return true;
+                    score = calculatePageScore(likes, dislikes);
+
+                    port.postMessage({
+                        type: 'getPageLikes',
+                        likes: likes,
+                        dislikes: dislikes,
+                        score: score,
+                        likedAlready: likedAlready,
+                        dislikedAlready: dislikedAlready
+                    });
+
+                    async function getPageLikes() {
+                        return new Promise(resolve => {
+                            likesChain.once(function (data) {
+                                resolve(data.likes);
+                            });
+                        });
+                    }
+
+                    async function getPageDislikes() {
+                        return new Promise(resolve => {
+                            dislikesChain.once(function (data) {
+                                resolve(data.dislikes);
+                            });
+                        });
+                    }
                 })();
             }
+            return true;
         }
-        ////////////////////////////////////////////////////////////////////////////////////////////////////  
-        else if (request.type === "getNumPageLikes") {
-            getNumPageLikes(request.table, request.pageUrl);
+        //////////////////////////////////////////////////////////////////////////////////////////////////// 
+        else if (request.type === "getPageLikes") {
+            (async function () {
+                let likes = 0;
+                let dislikes = 0;
+                let likedAlready = false;
+                let dislikedAlready = false;
+                let score = 0;
+                let pubKey = user.is.pub;
+                let likesChain = user.get('pageReviews').get(request.pageUrl).get('likes');
+                let dislikesChain = user.get('pageReviews').get(request.pageUrl).get('dislikes');
+                let likesChainIsEmpty = await isEmpty('pageReviews', request.pageUrl, 'likes');
+                let dislikesChainIsEmpty = await isEmpty('pageReviews', request.pageUrl, 'dislikes');
+
+                if (!likesChainIsEmpty) {
+                    likes = await getPageLikes();
+                    likedAlready = await likesChain.get('users').get(pubKey);
+                }
+
+                if (!dislikesChainIsEmpty) {
+                    dislikes = await getPageDislikes();
+                    dislikedAlready = await dislikesChain.get('users').get(pubKey);
+                }
+
+                score = calculatePageScore(likes, dislikes);
+
+                port.postMessage({
+                    type: 'getPageLikes',
+                    likes: likes,
+                    dislikes: dislikes,
+                    score: score,
+                    likedAlready: likedAlready,
+                    dislikedAlready: dislikedAlready
+                });
+
+                async function getPageLikes() {
+                    return new Promise(resolve => {
+                        likesChain.once(function (data) {
+                            resolve(data.likes);
+                        });
+                    });
+                }
+
+                async function getPageDislikes() {
+                    return new Promise(resolve => {
+                        dislikesChain.once(function (data) {
+                            resolve(data.dislikes);
+                        });
+                    });
+                }
+            })();
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -258,6 +326,18 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
 
     /********** Helper functions **********/
+
+    async function isEmpty(table, pageUrl, type) {
+        return new Promise(resolve => {
+            user.get(table).get(pageUrl).get(type).once(function (data) {
+                if (data === undefined) {
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            });
+        });
+    }
 
     function getAll(pageUrl, itemId, type) {
         let array = [];
@@ -279,53 +359,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         });
     }
 
-    async function getNumPageLikes(table, pageUrl) {
-        console.log(`GETTING PAGE REACTIONS...`);
-
-        let likesGraphIsEmpty = await isEmpty(table, pageUrl, 'likes');
-        let dislikesGraphIsEmpty = await isEmpty(table, pageUrl, 'dislikes');
-        let likes = 0;
-        let dislikes = 0;
-        let hasLiked = false;
-        let hasDisliked = false;
-
-        if (!likesGraphIsEmpty) {
-            likes = await countLikes(table, pageUrl, 'likes');
-            hasLiked = await reactedAlready(table, pageUrl, 'likes');
-            hasLiked = hasLiked.reactedAlready;
-        }
-
-        if (!dislikesGraphIsEmpty) {
-            dislikes = await countLikes(table, pageUrl, 'dislikes');
-            hasDisliked = await reactedAlready(table, pageUrl, 'dislikes');
-            hasDisliked = hasDisliked.reactedAlready;
-        }
-
-        console.log("Likes: " + likes);
-        console.log("Dislikes: " + dislikes);
-
-        let score = calculatePageScore(likes, dislikes);
-        port.postMessage({
-            type: table,
-            likes: likes,
-            dislikes: dislikes,
-            pageScore: score,
-            hasLiked: hasLiked,
-            hasDisliked: hasDisliked
-        });
-    }
-
-    async function isEmpty(table, pageUrl, type) {
-        let isEmpty;
-        await user.get(table).get(pageUrl).get(type).once(function (data) {
-            if (data === undefined) {
-                isEmpty = true;
-            } else {
-                isEmpty = false;
-            }
-        });
-        return isEmpty;
-    }
 
     function calculatePageScore(numLikes, numDislikes) {
         let score = numLikes + numDislikes;
@@ -336,74 +369,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         } else {
             return score;
         }
-    }
-
-    async function countLikes(table, pageUrl, type) {
-        let array = [];
-        let userIdArray = [];
-        let count = 0;
-        console.log(`COUNTING ${type}...`);
-
-        await user.get(table).get(pageUrl).get(type).map().once(function (res, key) {
-
-            let keyFound = array.includes(key);
-            let userIdFound = userIdArray.includes(res.userId);
-
-            if (res.reacted === false) {
-                console.log(`User has not reacted. Skipping...`); //prob better to do if !== false and remove msg
-            } else if (keyFound) {
-                console.log(`Found a duplicate key. Skipping...`);
-            } else if (userIdFound) {
-                console.log(`Object has the same userID. Skipping...`);
-            } else {
-                array.push(key);
-                userIdArray.push(res.userId);
-                count++;
-            }
-        });
-        return count;
-    }
-
-    async function reactedAlready(table, pageUrl, type) {
-        let array = [];
-        let userIdArray = [];
-        let obj = {
-            reactedAlready: false,
-            key: null
-        };
-
-        console.log(`CHECKING FOR EXISTING ${type}...`);
-
-        await user.get(table).get(pageUrl).get(type).map().once(function (data, key) {
-            if (data !== null) { //what is this checking? 
-
-                let userId = data.userId;
-                let keyFound = array.includes(key);
-                let userIdFound = userIdArray.includes(data.userId);
-
-                console.log(`${type}: UserID: ${userId.substr(0, 10)}(...) has already reacted ${data.reacted} to ItemId: ${data.itemId}`);
-
-                if (keyFound) {
-                    console.log(`Found a duplicate key. Skipping...`);
-                } else if (userIdFound) {
-                    console.log(`Found a duplicate userId. Skipping...`);
-                } else if (data.userId === user.is.pub && data.reacted) {
-                    array.push(key);
-                    userIdArray.push(data.userId);
-                    obj = {
-                        reactedAlready: true,
-                        key: key
-                    }
-                } else {
-                    obj = {
-                        reactedAlready: false,
-                        key: key
-                    }
-                }
-            }
-        });
-        console.log(`Returning ${obj.reactedAlready}...`);
-        return obj;
     }
 
     async function getProfilePicture(pageUrl) {

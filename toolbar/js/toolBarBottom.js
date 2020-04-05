@@ -21,32 +21,32 @@ class ToolBarBottom extends HTMLElement {
             let dislikeClass = "blue";
             let totLikes = 0;
             let totDislikes = 0;
-            //let score = 0;
+            let score = 0;
             let hasLiked = false;
             let hasDisliked = false;
             let obj = null;
-            let val; // can remove? 
 
             obj = await getPageLikes();
+            /*obj = await getPageLikes();
             totLikes = parseInt(obj.likes);
             totDislikes = parseInt(obj.dislikes);
             hasLiked = obj.hasLiked;
             hasDisliked = obj.hasDisliked;
+            score = obj.pageScore;*/
 
-            if (hasLiked)
+            if (obj.likedAlready)
                 likeClass = "gray";
-            if (hasDisliked)
+            if (obj.dislikedAlready)
                 dislikeClass = "gray";
 
             async function getPageLikes() {
                 return new Promise(resolve => {
                     port.postMessage({
-                        type: "getNumPageLikes",
-                        table: 'pageReviews',
+                        type: "getPageLikes",
                         pageUrl: url
                     });
                     port.onMessage.addListener(function (res) {
-                        if (res.type === "pageReviews") {
+                        if (res.type === "getPageLikes") {
                             resolve(res);
                         }
                     });
@@ -64,10 +64,10 @@ class ToolBarBottom extends HTMLElement {
 </div>
 <div class="toolbar-bottom">
 <div id="like"><i class="${likeClass} fa fa-thumbs-up"></i></div>
-<div id="likes">${totLikes}</div>
+<div id="likes">${obj.likes}</div>
 <div id="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
-<div id="dislikes">${totDislikes}</div>
-<div><span id="score">${obj.pageScore}</span>%</div>
+<div id="dislikes">${obj.dislikes}</div>
+<div><span id="score">${obj.score}</span>%</div>
 </div>
 `;
 
@@ -111,26 +111,29 @@ class ToolBarBottom extends HTMLElement {
 
             $(like).on('click', async function (e) {
                 e.stopImmediatePropagation();
-
                 $(like).find('i').toggleClass("red gray");
                 $(dislike).find('i').removeClass("gray");
                 $(dislike).find('i').addClass("blue");
-                //let key = $(like).data('key');
+
+                port.postMessage({
+                    type: "likePage",
+                    reactType: 'like',
+                    pageUrl: url,
+                    date: getDate()
+                });
+                
+                port.onMessage.addListener(function (res) {
+                    if (res.type === "getPageLikes") {
+                        console.log(res);
+                        $(dislikes).html(res.dislikes);
+                        $(likes).html(res.likes);
+                        $(scoreDiv).html(res.score);
+                    }
+                });
+
 
                 // i'm not sure what to do with the title (document.title) yet. 
                 // I need to get the title and description of the page. maybe it would be better to pull this from google on the fly
-                let itemId = 94299; // this needs to be dynamic
-
-                port.postMessage({
-                    type: "reaction",
-                    table: "pageReviews",
-                    reactType: "likes",
-                    pageUrl: url,
-                    itemId: Math.random().toString(36).slice(-6),
-                    date: getDate()
-                });
-
-                // if the page hasn't already been liked, toggle the class, else, do nothing
 
                 port.onMessage.addListener(function (res) {
                     if (res.type === "pageReviews") {
@@ -138,10 +141,6 @@ class ToolBarBottom extends HTMLElement {
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
                         $(scoreDiv).html(res.pageScore);
-
-                        /*if (res.hasDisliked) {
-                            $(dislike).find('i').toggleClass("gray blue");
-                        }*/
 
                         if (!res.hasLiked) {
                             console.log("page has not already been liked");
@@ -159,19 +158,21 @@ class ToolBarBottom extends HTMLElement {
                 $(like).find('i').removeClass("gray");
                 $(like).find('i').addClass("red");
 
-                //let key = $(dislike).data('key');
-                let itemId = 36299; // this needs to be dynamic
-
                 port.postMessage({
-                    type: "reaction",
-                    table: "pageReviews",
-                    reactType: "dislikes",
+                    type: "likePage",
+                    reactType: 'dislike',
                     pageUrl: url,
-                    itemId: Math.random().toString(36).slice(-6),
                     date: getDate()
                 });
-
-                // if the page has already been liked, retract the like, else, toggle class
+                
+                port.onMessage.addListener(function (res) {
+                    if (res.type === "getPageLikes") {
+                        console.log(res);
+                        $(dislikes).html(res.dislikes);
+                        $(likes).html(res.likes);
+                        $(scoreDiv).html(res.score);
+                    }
+                });
 
                 port.onMessage.addListener(function (res) {
                     if (res.type === "pageReviews") {
