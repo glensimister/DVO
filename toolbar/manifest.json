@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "manifest_version": 2,
     "description": "Toolbar for DVO",
-    "permissions": ["storage", "tabs", "activeTab", "contextMenus"], 
+    "permissions": ["storage", "tabs", "activeTab", "contextMenus"],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     "externally_connectable": {
         "matches": ["http://localhost:8000/", "<all_urls>"]
@@ -22,6 +22,10 @@
         },
         "default_title": "DVO",
         "default_popup": "popup.html"
+    },
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
     },
     "web_accessible_resources": [
         "images/*",

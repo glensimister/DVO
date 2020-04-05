@@ -28,15 +28,20 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getComments") {
             (async function () {
-                let comments = await getComments();
-                let json = JSON.stringify(comments);
-                let len = comments.length;
 
-                port.postMessage({
-                    type: "pageComments",
-                    comments: json,
-                    count: len
-                });
+                let comments = await getComments();
+
+                setTimeout(function () {
+                    let json = JSON.stringify(comments);
+                    console.log(json);
+                    let len = comments.length;
+
+                    port.postMessage({
+                        type: "pageComments",
+                        comments: json,
+                        count: len
+                    });
+                }, 1000);
 
                 async function getComments() {
                     let array = [];
@@ -46,31 +51,32 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let dislikes = 0;
                     let hasLiked = false;
                     let hasDisliked = false;
-                    await user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data, key) {
-                        //console.log(data);
-                        if (data.comment !== null) {
-                            if (keys.includes(key)) {
-                                console.log("duplicate data. skipping...");
-                            } else {
-                                let score = calculatePageScore(data.likes, data.dislikes);
-                                obj = {
-                                    key: data.commentId,
-                                    comment: data.comment,
-                                    date: data.date,
-                                    photo: data.photo,
-                                    name: data.name,
-                                    likes: data.likes,
-                                    dislikes: data.dislikes,
-                                    hasLiked: hasLiked,
-                                    hasDisliked: hasDisliked,
-                                    score: score
+                    return new Promise(async resolve => {
+                        await user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data, key) {
+                            if (data.comment !== null) {
+                                if (keys.includes(key)) {
+                                    console.log("duplicate data. skipping...");
+                                } else {
+                                    let score = calculatePageScore(data.likes, data.dislikes);
+                                    obj = {
+                                        key: data.commentId,
+                                        comment: data.comment,
+                                        date: data.date,
+                                        photo: data.photo,
+                                        name: data.name,
+                                        likes: data.likes,
+                                        dislikes: data.dislikes,
+                                        hasLiked: hasLiked,
+                                        hasDisliked: hasDisliked,
+                                        score: score
+                                    }
+                                    keys.push(key);
+                                    array.push(obj);
                                 }
-                                keys.push(key);
-                                array.push(obj);
                             }
-                        }
+                        });
+                        resolve(array);
                     });
-                    return array;
                 }
 
                 async function getPageLikes(commentId) {
@@ -110,6 +116,9 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     dislikes: 0,
                     score: 0
                 });
+                port.postMessage({
+                    type: "commentAdded"
+                });
             }
             return true;
         }
@@ -145,7 +154,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                         dislikes = await getPageDislikes();
                         dislikedAlready = await chain.get('users').get('dislikes').get(pubKey);
                     }
-                    
+
                     console.log(`${likes} / ${dislikes} / ${likedAlready} / ${dislikedAlready}`);
 
                     if (request.reactType === 'like') {
@@ -447,7 +456,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     port.postMessage({
                         type: type,
                         key: key,
-                        userId: data.userId
+                        userId: data.pubKey
                     });
                 }
             }

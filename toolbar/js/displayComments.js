@@ -9,7 +9,6 @@ $(document).ready(async function () {
     $(".post-comment-btn").on('click', function (e) {
         e.stopImmediatePropagation();
         let id = Math.random().toString(36).slice(-6);
-        //url = `${url}?=${id}`;
         let newComment = $(".post-comment").val();
         port.postMessage({
             type: "addComment",
@@ -18,7 +17,13 @@ $(document).ready(async function () {
             comment: newComment,
             date: getDate()
         });
-        getComments();
+        port.onMessage.addListener(function (res) {
+            if (res.type === "commentAdded") {
+                console.log('Comment added...');
+                $("#dialogBody").prepend(`<img style="display:block; width: 128px; margin:20px auto;" src="../images/widget-loader.gif" />`);
+                getComments();
+            }
+        });
     });
 
     function getComments() {
@@ -27,8 +32,11 @@ $(document).ready(async function () {
             pageUrl: url
         });
         port.onMessage.addListener(function (res) {
-            if (res.type == "pageComments") {
+            if (res.type === "pageComments") {
+                console.log(res);
                 let json = JSON.parse(res.comments);
+                
+                json.sort((a, b) => (a.score > b.score) ? 1 : (a.score === b.score) ? ((a.likes > b.likes) ? 1 : -1) : -1 );
 
                 if (json.length > 0) {
                     $("#dialogBody").html("");
@@ -62,7 +70,7 @@ $(document).ready(async function () {
 
                     let postDesc = document.querySelector(".post-desc"); // this could be jquery to make it more consistent
 
-                    $("#dialogBody").append(template);
+                    $("#dialogBody").prepend(template);
                     $('#comments').html(res.count);
                 });
 
@@ -127,7 +135,6 @@ $(document).ready(async function () {
 
                     port.onMessage.addListener(function (res) {
                         if (res.type === "getCommentLikes") {
-                            console.log(res);
                             $(`#${commentId} .like-count`).html(res.likes);
                             $(`#${commentId} .dislike-count`).html(res.dislikes);
                             $(`#${commentId} .score`).html(`<x-star-rating value="${(res.score/10)/2}" number="5"></x-star-rating>`);
