@@ -200,7 +200,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     async function getPageLikes() {
                         return new Promise(resolve => {
                             chain.get('likes').once(function (data) {
-                                console.log(data);
                                 resolve(data);
                             });
                         });
