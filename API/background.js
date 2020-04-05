@@ -47,7 +47,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let hasLiked = false;
                     let hasDisliked = false;
                     await user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data, key) {
-                        console.log(data);
+                        //console.log(data);
                         if (data.comment !== null) {
                             if (keys.includes(key)) {
                                 console.log("duplicate data. skipping...");
