@@ -28,14 +28,10 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getComments") {
             (async function () {
-
                 let comments = await getComments();
-
                 setTimeout(function () {
                     let json = JSON.stringify(comments);
-                    console.log(json);
                     let len = comments.length;
-
                     port.postMessage({
                         type: "pageComments",
                         comments: json,

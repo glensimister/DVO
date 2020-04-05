@@ -33,7 +33,7 @@ $(document).ready(async function () {
         });
         port.onMessage.addListener(function (res) {
             if (res.type === "pageComments") {
-                console.log(res);
+                console.log("res: " + res);
                 let json = JSON.parse(res.comments);
                 
                 json.sort((a, b) => (a.score > b.score) ? 1 : (a.score === b.score) ? ((a.likes > b.likes) ? 1 : -1) : -1 );
