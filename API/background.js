@@ -53,7 +53,6 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                                 console.log("duplicate data. skipping...");
                             } else {
                                 let score = calculatePageScore(data.likes, data.dislikes);
-
                                 obj = {
                                     key: data.commentId,
                                     comment: data.comment,
@@ -73,6 +72,24 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     });
                     return array;
                 }
+
+                async function getPageLikes(commentId) {
+                    return new Promise(resolve => {
+                        user.get('pageReviews').get(commentId).get('likes').once(function (data) {
+                            resolve(data.likes);
+                        });
+                    });
+                }
+
+                async function getPageDislikes(commentId) {
+                    return new Promise(resolve => {
+                        user.get('pageReviews').get(commentId).get('likes').once(function (data) {
+                            resolve(data.likes);
+                        });
+                    });
+                }
+
+
                 return true;
             })();
         }
@@ -109,28 +126,105 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         else if (request.type === "likeComment") {
             if (window.confirm(`Confirm like comment`)) {
                 (async function () {
-                    let chain = user.get('pageReviews').get(request.pageUrl).get('comments');
+                    let likes = 0;
+                    let dislikes = 0;
+                    let likedAlready = false;
+                    let dislikedAlready = false;
+                    let score = 0;
+                    let pubKey = user.is.pub;
+                    let chain = user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId);
+                    let hasLikes = await hasData('likes');
+                    let hasDislikes = await hasData('dislikes');
 
-                    async function getCommentLikes() {
-                        let likes;
-                        await chain.map().once(function (data) {
-                            if (data.commentId === request.commentId) {
-                                likes = data.likes;
-                            }
-                        });
-                        return likes;
+                    if (hasLikes) {
+                        likes = await getPageLikes();
+                        likedAlready = await chain.get('users').get('likes').get(pubKey);
                     }
 
-                    let result = await getCommentLikes();
-                    let commentLikes = result + 1;
-                    // will prob need to sign this somehow in order to check the user hasn't alread liked the comment
-                    chain.get(request.commentId).get('likes').put(commentLikes);
-                    let userId = user.is.pub;
-                    chain.get(request.commentId).get('users').set(userId); // can use this to check for duplicates
+                    if (hasDislikes) {
+                        dislikes = await getPageDislikes();
+                        dislikedAlready = await chain.get('users').get('dislikes').get(pubKey);
+                    }
+                    
+                    console.log(`${likes} / ${dislikes} / ${likedAlready} / ${dislikedAlready}`);
+
+                    if (request.reactType === 'like') {
+                        if (!likedAlready) {
+                            likes++;
+                            chain.get('likes').put(likes);
+                            chain.get('users').get('likes').get(pubKey).put(true);
+                        }
+
+                        if (likedAlready) {
+                            likes--;
+                            chain.get('likes').put(likes);
+                            chain.get('users').get('likes').get(pubKey).put(false);
+                        }
+
+                        if (dislikedAlready) {
+                            dislikes--;
+                            chain.get('dislikes').put(dislikes);
+                            chain.get('users').get('dislikes').get(pubKey).put(false);
+                        }
+                    } else if (request.reactType === 'dislike') {
+                        if (!dislikedAlready) {
+                            dislikes++;
+                            chain.get('dislikes').put(dislikes);
+                            chain.get('users').get('dislikes').get(pubKey).put(true);
+                        }
+
+                        if (dislikedAlready) {
+                            dislikes--;
+                            chain.get('dislikes').put(dislikes);
+                            chain.get('users').get('dislikes').get(pubKey).put(false);
+                        }
+
+                        if (likedAlready) {
+                            likes--;
+                            chain.get('likes').put(likes);
+                            chain.get('users').get('likes').get(pubKey).put(false);
+                        }
+                    }
+
+                    score = calculatePageScore(likes, dislikes);
+
                     port.postMessage({
-                        type: 'commentLiked',
-                        count: commentLikes
+                        type: 'getCommentLikes',
+                        likes: likes,
+                        dislikes: dislikes,
+                        score: score,
+                        likedAlready: likedAlready,
+                        dislikedAlready: dislikedAlready
                     });
+
+                    async function getPageLikes() {
+                        return new Promise(resolve => {
+                            chain.get('likes').once(function (data) {
+                                console.log(data);
+                                resolve(data);
+                            });
+                        });
+                    }
+
+                    async function getPageDislikes() {
+                        return new Promise(resolve => {
+                            chain.get('dislikes').once(function (data) {
+                                resolve(data);
+                            });
+                        });
+                    }
+
+                    async function hasData(type) {
+                        return new Promise(resolve => {
+                            chain.get(type).once(function (data) {
+                                if (data === undefined) {
+                                    resolve(false);
+                                } else {
+                                    resolve(true);
+                                }
+                            });
+                        });
+                    }
                 })();
                 return true;
             }
@@ -139,6 +233,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         else if (request.type === "deleteComment") {
             if (window.confirm(`Confirm delete comment`)) {
                 let comment = user.get('pageReviews').get(request.pageUrl).get('comments').get(request.commentId);
+                comment.get('commentId').put(null);
                 comment.get('comment').put(null);
                 comment.get('date').put(null);
                 comment.get('name').put(null);
@@ -168,68 +263,69 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     let dislikedAlready = false;
                     let score = 0;
                     let pubKey = user.is.pub;
-                    let likesChain = user.get('pageReviews').get(request.pageUrl).get('likes');
-                    let dislikesChain = user.get('pageReviews').get(request.pageUrl).get('dislikes');
+                    let chain = user.get('pageReviews').get(request.pageUrl);
+                    //let likesChain = user.get('pageReviews').get(request.pageUrl).get('likes');
+                    //let dislikesChain = user.get('pageReviews').get(request.pageUrl).get('dislikes');
                     let likesChainIsEmpty = await isEmpty('pageReviews', request.pageUrl, 'likes');
                     let dislikesChainIsEmpty = await isEmpty('pageReviews', request.pageUrl, 'dislikes');
 
                     if (!likesChainIsEmpty) {
                         likes = await getPageLikes();
-                        likedAlready = await likesChain.get('users').get(pubKey);
+                        likedAlready = await chain.get('likes').get('users').get(pubKey);
                     }
 
                     if (!dislikesChainIsEmpty) {
                         dislikes = await getPageDislikes();
-                        dislikedAlready = await dislikesChain.get('users').get(pubKey);
+                        dislikedAlready = await chain.get('dislikes').get('users').get(pubKey);
                     }
 
                     if (request.reactType === 'like') {
                         if (!likedAlready) {
                             likes++;
-                            await likesChain.put({
+                            await chain.get('likes').put({
                                 likes: likes
                             });
-                            await likesChain.get('users').get(pubKey).put(true);
+                            await chain.get('likes').get('users').get(pubKey).put(true);
                         }
 
                         if (likedAlready) {
                             likes--;
-                            await likesChain.put({
+                            await chain.get('likes').put({
                                 likes: likes
                             });
-                            await likesChain.get('users').get(pubKey).put(false);
+                            await chain.get('likes').get('users').get(pubKey).put(false);
                         }
 
                         if (dislikedAlready) {
                             dislikes--;
-                            await dislikesChain.put({
+                            await chain.get('dislikes').put({
                                 dislikes: dislikes
                             });
-                            await dislikesChain.get('users').get(pubKey).put(false);
+                            await chain.get('dislikes').get('users').get(pubKey).put(false);
                         }
                     } else if (request.reactType === 'dislike') {
                         if (!dislikedAlready) {
                             dislikes++;
-                            await dislikesChain.put({
+                            await chain.get('dislikes').put({
                                 dislikes: dislikes
                             });
-                            await dislikesChain.get('users').get(pubKey).put(true);
+                            await chain.get('dislikes').get('users').get(pubKey).put(true);
                         }
 
                         if (dislikedAlready) {
                             dislikes--;
-                            await dislikesChain.put({
+                            await chain.get('dislikes').put({
                                 dislikes: dislikes
                             });
-                            await dislikesChain.get('users').get(pubKey).put(false);
+                            await chain.get('dislikes').get('users').get(pubKey).put(false);
                         }
 
                         if (likedAlready) {
                             likes--;
-                            await likesChain.put({
+                            await chain.get('likes').put({
                                 likes: likes
                             });
-                            await likesChain.get('users').get(pubKey).put(false);
+                            await chain.get('likes').get('users').get(pubKey).put(false);
                         }
                     }
 
@@ -246,7 +342,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                     async function getPageLikes() {
                         return new Promise(resolve => {
-                            likesChain.once(function (data) {
+                            chain.get('likes').once(function (data) {
                                 resolve(data.likes);
                             });
                         });
@@ -254,7 +350,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
                     async function getPageDislikes() {
                         return new Promise(resolve => {
-                            dislikesChain.once(function (data) {
+                            chain.get('dislikes').once(function (data) {
                                 resolve(data.dislikes);
                             });
                         });

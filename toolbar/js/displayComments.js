@@ -107,38 +107,30 @@ $(document).ready(async function () {
 
                 $(".like").on('click', function () {
                     let commentId = $(this).parent().parent().attr('id');
-                    port.postMessage({
-                        type: "likeComment",
-                        pageUrl: url,
-                        commentId: commentId
-                    });
-
-                    //likeComment('likes', commentId);
+                    likeComment('like', commentId);
                     $(this).find('i').toggleClass("red gray");
                 });
                 $(".dislike").on('click', function () {
                     let commentId = $(this).parent().parent().attr('id');
-                    likeComment('dislikes', commentId);
+                    likeComment('dislike', commentId);
                     $(this).find('i').toggleClass("blue gray");
                 });
 
-                function likeComment(reactType, id) {
+                function likeComment(reactType, commentId) {
                     port.postMessage({
-                        type: "reaction",
-                        table: "pageReviews",
+                        type: "likeComment",
                         reactType: reactType,
                         pageUrl: url,
-                        itemId: id,
+                        commentId: commentId,
                         date: getDate()
                     });
-                    port.onMessage.addListener(function (res) {
-                        if (res.type === "pageReviews") {
-                            $(`#${id} .like-count`).html(res.likes);
-                            $(`#${id} .dislike-count`).html(res.dislikes);
 
-                            // better to set this with jquery
-                            let score = `<x-star-rating value="${res.pageScore}" number="5"></x-star-rating>`;
-                            $(`#${id} .score`).html(score);
+                    port.onMessage.addListener(function (res) {
+                        if (res.type === "getCommentLikes") {
+                            console.log(res);
+                            $(`#${commentId} .like-count`).html(res.likes);
+                            $(`#${commentId} .dislike-count`).html(res.dislikes);
+                            $(`#${commentId} .score`).html(`<x-star-rating value="${(res.score/10)/2}" number="5"></x-star-rating>`);
                         }
                     });
                 }
