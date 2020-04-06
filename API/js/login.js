@@ -13,7 +13,7 @@ $('.generate').click(async function () {
     $('#keys').html(`<div>Generating keys...</div><img src="/images/widget-loader.gif" /><p>This may take a few minutes. Please don't touch anything while your keys are being generated.</p>`);
     let pair = await SEA.pair();
     let pubKey = pair.pub;
-    let x = 3;
+    let x = 2;
     let first = pubKey.substr(0, x);
     let last = pubKey.substr(-x);
     let count = 0;
