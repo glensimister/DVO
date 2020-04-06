@@ -19,34 +19,33 @@ $(document).ready(async function () {
         });
         port.onMessage.addListener(function (res) {
             if (res.type === "commentAdded") {
-                console.log('Comment added...');
-                $("#dialogBody").prepend(`<img style="display:block; width: 128px; margin:20px auto;" src="../images/widget-loader.gif" />`);
                 getComments();
             }
         });
     });
 
     function getComments() {
+        $("#dialogBody").empty();
+        $("#dialogBody").prepend(`<img style="display:block; width: 128px; margin:20px auto;" src="../images/widget-loader.gif" />`);
         port.postMessage({
             type: "getComments",
             pageUrl: url
         });
         port.onMessage.addListener(function (res) {
             if (res.type === "pageComments") {
-                console.log("res: " + res);
                 let json = JSON.parse(res.comments);
-                
-                json.sort((a, b) => (a.score > b.score) ? 1 : (a.score === b.score) ? ((a.likes > b.likes) ? 1 : -1) : -1 );
-
-                if (json.length > 0) {
-                    $("#dialogBody").html("");
+                console.log(json);
+                if (json === null || json.length == 0) {
+                    $("#dialogBody").html(`<p style="text-align: center">There are no comments to show</p>`);
+                } else {
+                   $("#dialogBody").empty(); 
                 }
 
+                json.sort((a, b) => (a.score > b.score) ? 1 : (a.score === b.score) ? ((a.likes > b.likes) ? 1 : -1) : -1);
                 let likeClass = 'red';
                 let dislikeClass = 'blue';
 
-                json.forEach(async function (item, index) {
-
+                json.forEach(function (item, index) {
                     let template = `<div id="${item.key}" class="post">
 <i class="edit-post fa fa-edit"></i>
 <i class="delete-post fa fa-close"></i>
@@ -66,14 +65,11 @@ $(document).ready(async function () {
 </div>
 </div>
 `;
-
-
-                    let postDesc = document.querySelector(".post-desc"); // this could be jquery to make it more consistent
-
                     $("#dialogBody").prepend(template);
-                    $('#comments').html(res.count);
                 });
 
+                let postDesc = document.querySelector(".post-desc"); // this could be jquery to make it more consistent
+                $('#comments').html(res.count);
 
                 $('.delete-post').on("click", function () {
                     let commentId = $(this).parent().attr('id');
@@ -85,30 +81,31 @@ $(document).ready(async function () {
                     });
                     port.onMessage.addListener(function (res) {
                         if (res.type === "commentDeleted") {
-                            $(_this).parent().remove();
+                            //$(_this).parent().remove();
+                            getComments();
                         }
                     });
 
                 });
 
                 $('.edit-post').on("click", function () {
-                    let currentText = $(".post-desc").html();
+                    let commentId = $(this).parent().attr('id');
+                    let currentText = $(`#${commentId} .post-desc`).html();
                     if ($(this).hasClass('fa-edit')) {
-                        $(".post-desc").attr("contenteditable", "true");
-                        $(".post-desc").addClass('editable');
+                        $(`#${commentId} .post-desc`).attr("contenteditable", "true");
+                        $(`#${commentId} .post-desc`).addClass('editable');
                     } else if ($(this).hasClass('fa-save')) {
-                        let newText = $(".post-desc").html();
-                        $(".post-desc").attr("contenteditable", "false");
-                        $(".post-desc").removeClass('editable');
-                        //if (newText !== currentText) { //maybe need to use string compare
-                        let commentId = $(this).parent().attr('id');
+                        let newText = $(`#${commentId} .post-desc`).html();
+                        $(`#${commentId} .post-desc`).attr("contenteditable", "false");
+                        $(`#${commentId} .post-desc`).removeClass('editable');
+                        //if (newText !== currentText) { // should cancel if strings match
                         port.postMessage({
                             type: "updateComment",
                             update: newText,
                             commentId: commentId,
                             pageUrl: url
                         });
-                        //}
+                        //} 
                     }
                     $(this).toggleClass("fa-edit fa-save");
                 });

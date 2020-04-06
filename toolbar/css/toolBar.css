@@ -194,7 +194,7 @@ dialog {
     box-shadow: inset 0px 3px 5px 0px rgba(0, 0, 0, 0.57);
 }
 #dialogHeader {
-    line-height: 45px;
+    margin-bottom: 10px;
 }
 #dialogFooter {
     line-height: 35px;

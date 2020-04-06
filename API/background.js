@@ -28,27 +28,47 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getComments") {
             (async function () {
-                let comments = await getComments();
-                setTimeout(function () {
-                    let json = JSON.stringify(comments);
-                    let len = comments.length;
+                let chain = user.get('pageReviews').get(request.pageUrl).get('comments');
+                let has = await hasData();
+                if (has) {
+                    let comments = await getComments();
+                    setTimeout(function () {
+                        let json = JSON.stringify(comments);
+                        let len = comments.length;
+                        port.postMessage({
+                            type: "pageComments",
+                            comments: json,
+                            count: len
+                        });
+                    }, 500);
+                } else {
                     port.postMessage({
                         type: "pageComments",
-                        comments: json,
-                        count: len
+                        comments: null,
+                        count: 0
                     });
-                }, 1000);
+                }
+
+                async function hasData() {
+                    return new Promise(resolve => {
+                        chain.once(function (data) {
+                            if (data === undefined) {
+                                resolve(false);
+                            } else {
+                                resolve(true);
+                            }
+                        });
+                    });
+                }
 
                 async function getComments() {
                     let array = [];
                     let keys = [];
                     let obj = {};
-                    let likes = 0;
-                    let dislikes = 0;
                     let hasLiked = false;
                     let hasDisliked = false;
                     return new Promise(async resolve => {
-                        await user.get('pageReviews').get(request.pageUrl).get('comments').map().once(function (data, key) {
+                        await chain.map().once(function (data, key) {
                             if (data.comment !== null) {
                                 if (keys.includes(key)) {
                                     console.log("duplicate data. skipping...");
@@ -90,10 +110,8 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                         });
                     });
                 }
-
-
-                return true;
             })();
+            return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "addComment") {
@@ -110,7 +128,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     userId: userId,
                     likes: 0,
                     dislikes: 0,
-                    score: 0
+                    score: 100
                 });
                 port.postMessage({
                     type: "commentAdded"
