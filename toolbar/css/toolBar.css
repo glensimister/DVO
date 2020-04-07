@@ -3,6 +3,7 @@
     src: URL('fonts/OpenSans-Bold.ttf') format('truetype');
 }*/
 
+
 .toolbar-bottom,
 .toolbar-comments {
     background: #1c2529;
@@ -19,7 +20,7 @@
 }
 .toolbar-bottom {
     position: fixed;
-    width: 240px;
+    width: 284px;
     left: 5px;
     /* margin-left: -120px; */
     bottom: 0;
@@ -152,7 +153,12 @@ x-star-rating > .star.full::after {
 
 /*** need to clean up these styles ***/
 
-dialog {
+body {
+    padding: 0;
+    margin: 0;
+}
+
+/*dialog {
     background: #2c3a40;
     top: 20px;
     max-width: 600px;
@@ -164,13 +170,13 @@ dialog {
     -webkit-box-shadow: 0px 10px 11px -4px rgba(0, 0, 0, 0.66);
     -moz-box-shadow: 0px 10px 11px -4px rgba(0, 0, 0, 0.66);
     box-shadow: 0px 10px 11px -4px rgba(0, 0, 0, 0.66);
-}
+}*/
 
 /* #dialog is for browser action popup */
 
 #dialog {
     background: #2c3a40;
-    width: 400px;
+    /*width: 400px;*/
     color: #fff;
     padding: 20px;
     font-size: 14px;
@@ -205,11 +211,9 @@ dialog {
     border-radius: 4px;
     margin-top: 20px;
 }
-
 #dialogFooter a {
-    color:#fff;
+    color: #fff;
 }
-
 #dialogFooter span {
     padding: 0 5px;
     border-right: 1px solid #eee;

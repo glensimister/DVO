@@ -26,6 +26,29 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
             return true;
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (request.type === "countComments") {
+            // still need to filter out undefined, nulls and duplicates
+            let num = await countComments();
+            setTimeout(function () {
+                port.postMessage({
+                    type: "countComments",
+                    count: num
+                });
+            }, 500);
+            async function countComments() {
+                return new Promise(async resolve => {
+                    await user.get('pageReviews').get(request.pageUrl).get('comments').once(function (data) {
+                        if (data === undefined || data === null) {
+                            resolve(0);
+                        } else {
+                            let len = Object.keys(data).length - 1;
+                            resolve(len);
+                        }
+                    });
+                });
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "getComments") {
             (async function () {
                 let chain = user.get('pageReviews').get(request.pageUrl).get('comments');

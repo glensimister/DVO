@@ -19,9 +19,9 @@
             "16": "icons/icon16.png", // optional
             "24": "icons/icon48.png", // optional
             "32": "icons/icon128.png" // optional
-        },
+        }/*,
         "default_title": "DVO",
-        "default_popup": "popup.html"
+        "default_popup": "popup.html"*/
     },
     "background": {
         "scripts": ["background.js"],

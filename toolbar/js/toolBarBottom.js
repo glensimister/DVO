@@ -27,12 +27,7 @@ class ToolBarBottom extends HTMLElement {
             let obj = null;
 
             obj = await getPageLikes();
-            /*obj = await getPageLikes();
-            totLikes = parseInt(obj.likes);
-            totDislikes = parseInt(obj.dislikes);
-            hasLiked = obj.hasLiked;
-            hasDisliked = obj.hasDisliked;
-            score = obj.pageScore;*/
+            let commentCount = await countComments();
 
             if (obj.likedAlready)
                 likeClass = "gray";
@@ -53,6 +48,22 @@ class ToolBarBottom extends HTMLElement {
                 });
             }
 
+            async function countComments() {
+                return new Promise(resolve => {
+                    port.postMessage({
+                        type: "countComments",
+                        pageUrl: url
+                    });
+                    port.onMessage.addListener(function (res) {
+                        if (res.type === "countComments") {
+                            resolve(res.count);
+                        }
+                    });
+                });
+            }
+
+
+
             shadowRoot.innerHTML = `
 <link rel="stylesheet" href="${toolBarCss}">
 <link rel="stylesheet" href="${fontAwesome}">
@@ -68,6 +79,8 @@ class ToolBarBottom extends HTMLElement {
 <div id="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
 <div id="dislikes">${obj.dislikes}</div>
 <div><span id="score">${obj.score}</span>%</div>
+<div id="comment"><i class="yellow fa fa-comment"></i></div>
+<div id="comments">${commentCount}</div>
 </div>
 `;
 
@@ -75,6 +88,8 @@ class ToolBarBottom extends HTMLElement {
             let like = shadowRoot.getElementById("like");
             let dislikes = shadowRoot.getElementById("dislikes");
             let dislike = shadowRoot.getElementById("dislike");
+            let comment = shadowRoot.getElementById("comment");
+            let comments = shadowRoot.getElementById("comments");
             let close = shadowRoot.getElementById("close");
             let scoreDiv = shadowRoot.getElementById("score");
             let toolbar = shadowRoot.querySelector(".toolbar-bottom");
@@ -109,6 +124,17 @@ class ToolBarBottom extends HTMLElement {
                 return date;
             }
 
+            $(comment).on('click', async function (e) {
+                e.stopImmediatePropagation();
+                let localPort = chrome.runtime.connect({
+                    name: "dvo"
+                });
+
+                localPort.postMessage({
+                    type: "openComments"
+                });
+            });
+
             $(like).on('click', async function (e) {
                 e.stopImmediatePropagation();
                 $(like).find('i').toggleClass("red gray");
@@ -121,32 +147,13 @@ class ToolBarBottom extends HTMLElement {
                     pageUrl: url,
                     date: getDate()
                 });
-                
+
                 port.onMessage.addListener(function (res) {
                     if (res.type === "getPageLikes") {
                         console.log(res);
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
                         $(scoreDiv).html(res.score);
-                    }
-                });
-
-
-                // i'm not sure what to do with the title (document.title) yet. 
-                // I need to get the title and description of the page. maybe it would be better to pull this from google on the fly
-
-                port.onMessage.addListener(function (res) {
-                    if (res.type === "pageReviews") {
-                        console.log(res);
-                        $(dislikes).html(res.dislikes);
-                        $(likes).html(res.likes);
-                        $(scoreDiv).html(res.pageScore);
-
-                        if (!res.hasLiked) {
-                            console.log("page has not already been liked");
-                        } else {
-                            console.log("page has already been liked");
-                        }
                     }
                 });
             });
@@ -164,7 +171,7 @@ class ToolBarBottom extends HTMLElement {
                     pageUrl: url,
                     date: getDate()
                 });
-                
+
                 port.onMessage.addListener(function (res) {
                     if (res.type === "getPageLikes") {
                         console.log(res);
@@ -180,16 +187,6 @@ class ToolBarBottom extends HTMLElement {
                         $(dislikes).html(res.dislikes);
                         $(likes).html(res.likes);
                         $(scoreDiv).html(res.pageScore);
-
-                        /*if (res.hasLiked) {
-                            $(like).find('i').toggleClass("gray red");
-                        }*/
-
-                        if (!res.hasDisliked) {
-                            console.log("page has not already been disliked");
-                        } else {
-                            console.log("page has already been disliked");
-                        }
                     }
                 });
             });

@@ -2,8 +2,16 @@ $(document).ready(async function () {
 
     let laserExtensionId = "bnmeokbnbegjnbddihbidleappfkiimj";
     let port = chrome.runtime.connect(laserExtensionId);
-    let url = await getPageUrl();
-
+    
+    /*
+    chrome.tabs.query() was returning the popup url and not the page url 
+    so i passed the url as parameter from background.js
+    }*/
+    
+    var urlParams = new URLSearchParams(window.location.search);
+    console.log(urlParams.get('url'));
+    let url = urlParams.get('url');
+    
     getComments();
 
     $(".post-comment-btn").on('click', function (e) {
@@ -38,7 +46,7 @@ $(document).ready(async function () {
                 if (json === null || json.length == 0) {
                     $("#dialogBody").html(`<p style="text-align: center">There are no comments to show</p>`);
                 } else {
-                   $("#dialogBody").empty(); 
+                    $("#dialogBody").empty();
                 }
 
                 json.sort((a, b) => (a.score > b.score) ? 1 : (a.score === b.score) ? ((a.likes > b.likes) ? 1 : -1) : -1);
@@ -69,7 +77,7 @@ $(document).ready(async function () {
                 });
 
                 let postDesc = document.querySelector(".post-desc"); // this could be jquery to make it more consistent
-                $('#comments').html(res.count);
+                //$('#comments').html(res.count);
 
                 $('.delete-post').on("click", function () {
                     let commentId = $(this).parent().attr('id');
@@ -145,17 +153,6 @@ $(document).ready(async function () {
 
 ///////////////////////////// functions /////////////////////////////////////
 
-
-async function getPageUrl() {
-    return new Promise(resolve => {
-        chrome.tabs.query({
-            'active': true,
-            'lastFocusedWindow': true
-        }, function (tabs) {
-            resolve(tabs[0].url);
-        });
-    });
-}
 
 function getDate() {
     var d = new Date();
