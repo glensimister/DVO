@@ -9,7 +9,9 @@
 
 <p>The screenshot below uses the DVO API extension and the Toolbar extension (see above)</p>
 
-![DVO Screenshot](screenshot.gif)
+![DVO Screenshot](Capture.JPG)
+
+![DVO Animated Screenshot](screenshot.gif)
 
 <p>DVO will provide the API for Devolution - a decentralized governance model (screenshot below)</p>
 
