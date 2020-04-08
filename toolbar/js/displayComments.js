@@ -64,7 +64,7 @@ $(document).ready(async function () {
 <p>${item.comment}</p>
 </div>
 </div>
-<div class="toolbar">
+<div class="toolbar toolbar-comments">
 <div class="like"><i class="${likeClass} fa fa-thumbs-up"></i></div>
 <div class="like-count">${item.likes}</div>
 <div class="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
