@@ -1,4 +1,4 @@
-class ToolBarBottom extends HTMLElement {
+class ToolBar extends HTMLElement {
     connectedCallback() {
         const shadowRoot = this.attachShadow({
             mode: 'closed'
@@ -73,7 +73,7 @@ class ToolBarBottom extends HTMLElement {
 <div id="close">
 <div><span class="arrow">&#9650;</span></div>
 </div>
-<div class="toolbar-bottom">
+<div class="toolbar bottom">
 <div id="like"><i class="${likeClass} fa fa-thumbs-up"></i></div>
 <div id="likes">${obj.likes}</div>
 <div id="dislike"><i class="${dislikeClass} fa fa-thumbs-down"></i></div>
@@ -92,7 +92,7 @@ class ToolBarBottom extends HTMLElement {
             let comments = shadowRoot.getElementById("comments");
             let close = shadowRoot.getElementById("close");
             let scoreDiv = shadowRoot.getElementById("score");
-            let toolbar = shadowRoot.querySelector(".toolbar-bottom");
+            let toolbar = shadowRoot.querySelector(".toolbar");
 
 
             async function isUserLoggedIn() {
@@ -194,4 +194,4 @@ class ToolBarBottom extends HTMLElement {
     }
 }
 
-customElements.define('toolbar-bottom', ToolBarBottom);
+customElements.define('tool-bar', ToolBar);
