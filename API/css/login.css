@@ -75,3 +75,6 @@ a {
     padding:20px;
     word-wrap: break-word;
 }
+#confirmation .url {
+   word-wrap: break-word; 
+}

@@ -1,3 +1,4 @@
+//var gun = Gun(['https://guntest.herokuapp.com/gun']);
 var gun = Gun();
 var user = gun.user();
 
@@ -21,9 +22,41 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
                     type: "loggedIn",
                     response: false
                 });
-                alert("You need to login to use DVO (top right)");
+                //alert("You need to login to use DVO (top right)");
             }
             return true;
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (request.type === "saveResume") {
+            if (window.confirm(`Confirm save`)) {
+                user.get('profile').get(request.userId).get('resume').put(request.update);
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (request.type === "updateProfile") {
+            if (window.confirm(`Confirm save ${request.field}`)) {
+                user.get('profile').get(request.userId).get(request.field).put(request.update);
+                user.get('profile').get(request.userId).get(request.field).once(function (data) {
+                    console.log(data);
+                });
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (request.type === "getProfile") {
+            user.get('profile').get(request.userId).once(function (data) {
+                console.log(data);
+                if (data !== undefined) {
+                    port.postMessage({
+                        type: "getProfile",
+                        name: data.name,
+                        email: data.email,
+                        phone: data.phone,
+                        location: data.location,
+                        resume: data.resume,
+                        photo: data.photo
+                    });
+                }
+            });
         }
         ////////////////////////////////////////////////////////////////////////////////////////////////////
         else if (request.type === "countComments") {
@@ -514,7 +547,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
     async function getProfilePicture(pageUrl) {
         return new Promise(resolve => {
-            user.get('profile').get('photo').once(function (photo) {
+            user.get('profile').get(user.is.pub).get('photo').once(function (photo) {
                 resolve(photo);
             });
         });
@@ -522,7 +555,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
 
     async function getName() {
         return new Promise(resolve => {
-            user.get('profile').get('name').once(function (name) {
+            user.get('profile').get(user.is.pub).get('name').once(function (name) {
                 resolve(name);
             });
         });
@@ -537,7 +570,17 @@ chrome.runtime.onInstalled.addListener(function () {
     var id = chrome.contextMenus.create({
         "title": title,
         "contexts": [context],
-        "id": "context" + context
+        "id": "Make profile picture"
+    });
+});
+
+chrome.runtime.onInstalled.addListener(function () {
+    var title = "Add photo to gallery";
+    var context = "image";
+    var id = chrome.contextMenus.create({
+        "title": title,
+        "contexts": [context],
+        "id": "Add photo to gallery"
     });
 });
 
@@ -547,7 +590,7 @@ chrome.runtime.onInstalled.addListener(function () {
     var id = chrome.contextMenus.create({
         "title": title,
         "contexts": [context],
-        "id": "context" + 2
+        "id": "Like Image"
     });
 });
 
@@ -557,7 +600,7 @@ chrome.runtime.onInstalled.addListener(function () {
     var id = chrome.contextMenus.create({
         "title": title,
         "contexts": [context],
-        "id": "context" + 3
+        "id": "Dislike Image"
     });
 });
 
@@ -567,15 +610,17 @@ chrome.runtime.onInstalled.addListener(function () {
     var id = chrome.contextMenus.create({
         "title": title,
         "contexts": [context],
-        "id": "context" + 4
+        "id": "Share Image"
     });
 });
 
 chrome.contextMenus.onClicked.addListener(onClickHandler);
 
 function onClickHandler(info, tab) {
-    //if (window.confirm(`Are you sure you want to post ${info.srcUrl} to your DVO newsfeed?`)) {}
-    user.get('profile').get('photo').put(info.srcUrl);
+    console.log(info);
+    if (window.confirm(`Are you sure you want to ${info.menuItemId} (${info.srcUrl})`)) {
+         user.get('profile').get(user.is.pub).get('photo').put(info.srcUrl);
+    }
 }
 
 /***** Internal API for login and registration *****/
@@ -604,11 +649,31 @@ chrome.runtime.onConnect.addListener(function (port) {
                 user.auth(request.username, request.password, function () {
                     port.postMessage({
                         response: true,
-                        photo: "/images/profilepic.jpg"
+                        photo: "images/profilepic.jpg",
+                        userId: user.is.pub
                     });
-                    user.get('profile').get('name').put(request.name);
-                    let profilePicUrl = "https://glensimister.files.wordpress.com/2014/12/profilepic.jpg?w=660";
-                    user.get('profile').get('photo').put(profilePicUrl);
+                    user.get('profile').get(user.is.pub).get('name').put("Guest User");
+                    user.get('profile').get(user.is.pub).get('photo').put("images/profilepic.jpg");
+                    user.get('profile').get(user.is.pub).get('email').put("guestuser123@gmail.com");
+                    user.get('profile').get(user.is.pub).get('location').put("Devon, UK");
+                    let resume = `<h1>Resume</h1>
+
+                <h2>Sed egestas, ante et vulputate volutpat, eros pede semper est, vitae luctus metus libero eu augue. Morbi purus libero, faucibus adipiscing, commodo quis, gravida id, est.</h2>
+
+                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Phasellus hendrerit. Pellentesque aliquet nibh nec urna. In nisi neque, aliquet vel, dapibus id, mattis vel, nisi. Sed pretium, ligula sollicitudin laoreet viverra, tortor libero sodales leo, eget blandit nunc tortor eu nibh. Nullam mollis. Ut justo. Suspendisse potenti. <a href="">And here is some anchor text.</a>
+                </p>
+                <div class="list">
+                    <div class="list-header">List header</div>
+                    <ul>
+                        <li><i class="fa fa-check"></i> Example list item</li>
+                        <li><i class="fa fa-check"></i> Example list item</li>
+                        <li><i class="fa fa-check"></i> Example list item</li>
+                        <li><i class="fa fa-check"></i> Example list item</li>
+                    </ul>
+                </div>
+
+                <p>Morbi interdum mollis sapien. Sed ac risus. Phasellus lacinia, magna a ullamcorper laoreet, lectus arcu pulvinar risus, vitae facilisis libero dolor a purus.</p>`;
+                    user.get('profile').get(user.is.pub).get('resume').put(resume);
                 });
             });
         }

@@ -62,13 +62,12 @@ function isUserLoggedIn() {
 
 $('.register').click(function () {
     //let profileName = $('.profile-name').val()
-    let profileName = "Guest User";
+    //let profileName = "Guest User";
 
     port.postMessage({
         type: "register",
         username: $('.username').val(),
-        password: $('.password').val(),
-        name: profileName
+        password: $('.password').val()
     });
 
     port.onMessage.addListener(function (res) {
@@ -78,7 +77,8 @@ $('.register').click(function () {
             $('.logout').css('display', 'block');
             $('#form').css('display', 'none');
             $('#confirmation').show();
-            $('#confirmation .name').html(profileName);
+            $('#confirmation .name').html("Guest User");
+            $('#confirmation .url').html(`<a target="_blank" href="http://localhost:8000/?userId=${res.userId}">http://localhost:8000/?userId=${res.userId}</a>`);
             $('.profile-photo').show();
             $('.profile-photo').attr("src", res.photo);
         }
