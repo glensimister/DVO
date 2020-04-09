@@ -78,7 +78,7 @@ $('.register').click(function () {
             $('#form').css('display', 'none');
             $('#confirmation').show();
             $('#confirmation .name').html("Guest User");
-            $('#confirmation .url').html(`<a target="_blank" href="http://localhost:8000/?userId=${res.userId}">http://localhost:8000/?userId=${res.userId}</a>`);
+            $('#confirmation .url').html(`<a target="_blank" href="https://glensimister.github.io/profile/?userId=${res.userId}">https://glensimister.github.io/profile/?userId=${res.userId}</a>`);
             $('.profile-photo').show();
             $('.profile-photo').attr("src", res.photo);
         }
