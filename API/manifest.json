@@ -6,7 +6,7 @@
     "permissions": ["storage", "contextMenus"],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     "externally_connectable": {
-        "matches": ["http://localhost:8000/*", "https://glensimister.github.io/profile/*", "<all_urls>", "*://*/*/*"],
+        "matches": ["http://localhost:8000/*", "https://glensimister.github.io/profile/*", "<all_urls>", "*://*/*/*/*"],
         "ids": ["*"]
     },
     "icons": {
