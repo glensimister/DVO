@@ -649,31 +649,13 @@ chrome.runtime.onConnect.addListener(function (port) {
                 user.auth(request.username, request.password, function () {
                     port.postMessage({
                         response: true,
-                        photo: "images/profilepic.jpg",
                         userId: user.is.pub
                     });
                     user.get('profile').get(user.is.pub).get('name').put("Guest User");
                     user.get('profile').get(user.is.pub).get('photo').put("images/profilepic.jpg");
                     user.get('profile').get(user.is.pub).get('email').put("guestuser123@gmail.com");
                     user.get('profile').get(user.is.pub).get('location').put("Devon, UK");
-                    let resume = `<h1>Resume</h1>
-
-                <h2>Sed egestas, ante et vulputate volutpat, eros pede semper est, vitae luctus metus libero eu augue. Morbi purus libero, faucibus adipiscing, commodo quis, gravida id, est.</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Phasellus hendrerit. Pellentesque aliquet nibh nec urna. In nisi neque, aliquet vel, dapibus id, mattis vel, nisi. Sed pretium, ligula sollicitudin laoreet viverra, tortor libero sodales leo, eget blandit nunc tortor eu nibh. Nullam mollis. Ut justo. Suspendisse potenti. <a href="">And here is some anchor text.</a>
-                </p>
-                <div class="list">
-                    <div class="list-header">List header</div>
-                    <ul>
-                        <li><i class="fa fa-check"></i> Example list item</li>
-                        <li><i class="fa fa-check"></i> Example list item</li>
-                        <li><i class="fa fa-check"></i> Example list item</li>
-                        <li><i class="fa fa-check"></i> Example list item</li>
-                    </ul>
-                </div>
-
-                <p>Morbi interdum mollis sapien. Sed ac risus. Phasellus lacinia, magna a ullamcorper laoreet, lectus arcu pulvinar risus, vitae facilisis libero dolor a purus.</p>`;
-                    user.get('profile').get(user.is.pub).get('resume').put(resume);
+                    user.get('profile').get(user.is.pub).get('resume').put(null);
                 });
             });
         }

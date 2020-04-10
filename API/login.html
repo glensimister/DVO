@@ -13,23 +13,22 @@
 <body>
     <div id="login">
         <img class="logo" src="images/logo.png" />
-        <img class="profile-photo" src="" style="display:none;" />
+        <!--<img class="profile-photo" src="" style="display:none;" />-->
         <div id="confirmation" style="display:none;">
-            <p>Welcome <span class="name"></span>!</p>
-            <p>NOTE: To update your profile picture, goto any photo on the internet, right click, and select "Make profile picture".</p>
-            <p>Your website is live!</p>
+            <!--<p>Welcome <span class="name"></span>!</p>--?
+            <!--
+            <p>NOTE: To update your profile picture, goto any photo on the internet, right click, and select "Make profile picture".</p>-->
+            <h3>Congratulations!</h3>
+            <p>Your webpage is live at the following address:</p>
             <p class="url"></p>
         </div>
-        <button class="btn btn-green logout" style="display:none; margin:20px auto;">LOGOUT</button>
+        <p>
+            <button class="btn btn-green logout" style="display:none; margin:20px auto;">LOGOUT</button>
+        </p>
         <div id="form">
-            <h4>LOGIN</h4>
+            <!--<h4>LOGIN</h4>-->
             <div class="form-group">
-                <p>WebID</p>
-                <input type="text" class="form-control username" value="Guest User">
-            </div>
-            <div class="form-group">
-                <p>Password</p>
-                <input type="password" class="form-control password" value="password">
+                <input type="text" id="input" class="form-control" placeholder="Paste your keys here">
             </div>
             <button class="btn btn-red login">LOGIN</button>
             <a class="createAccount">Create account</a>
@@ -37,28 +36,24 @@
     </div>
     <div id="register" style="display:none;">
         <div id="form">
-            <h4>REGISTER</h4>
+            <img class="logo" src="images/logo.png" />
+            <p></p>
+            <div class="form-group">
+                <p>Choose a host (optional)</p>
+                <select id="host" class="form-control">
+                    <option value="https://glensimister.github.io/profile/">Github</option>
+                    <option value="http://localhost:8000/">localhost:8000 (for testing only)</option>
+                </select>
+            </div>
             <div id="generate">
-                <button class="btn btn-red generate">GENERATE KEYS</button>
+                <button class="btn btn-green generate">GENERATE KEYS</button>
             </div>
-            <div id="keys"></div>
-            <!--<div class="form-group">
-                <p>Name</p>
-                <input type="text" class="form-control profile-name" value="Bob Smith">
-            </div>-->
             <div class="form-group">
-                <p>Public Key</p>
-                <input type="text" class="form-control username" value="Guest User"> <!--placeholder="Guest User"-->
+                <div id="keys"></div>
             </div>
-            <!--<div class="form-group">
-                <p>WebID - Don't have one? <a target="_blank" href="https://inrupt.net/">Get one here</a></p>
-                <input type="text" class="form-control username" value="https://devolution.inrupt.net/profile/card#me">
-            </div>-->
             <div class="form-group">
-                <p>Private Key</p>
-                <input type="password" class="form-control password" value="password"> <!--value="password"-->
+                <button class="btn btn-blue register" style="display:none">REGISTER</button>
             </div>
-            <button class="btn btn-blue register">REGISTER</button>
         </div>
     </div>
 
